@@ -9,7 +9,7 @@ namespace FishONU.CardSystem
     {
         [SerializeField] private GameObject cardPrefab;
         private Dictionary<string, GameObject> cardGo;
-        public SyncList<CardInfo> cards = new();
+        public readonly SyncList<CardInfo> cards = new();
 
         public enum ArrangeType
         {

@@ -1,4 +1,6 @@
-﻿namespace FishONU.CardSystem
+﻿using UnityEngine.Serialization;
+
+namespace FishONU.CardSystem
 {
     public enum Color
     {
@@ -36,6 +38,6 @@
         public Face face = Face.Back;
 
         // 卡牌唯一标识符
-        public readonly string Guid = System.Guid.NewGuid().ToString();
+        public readonly string guid = System.Guid.NewGuid().ToString();
     }
 }

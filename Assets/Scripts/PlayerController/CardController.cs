@@ -30,11 +30,11 @@ namespace FishONU.PlayerController
         [Server]
         private void ValidateAndPlayCard(CardInfo card)
         {
-            var c = cardInventory.cards.Find(c => c.Guid == card.Guid);
+            var c = cardInventory.cards.Find(c => c.guid == card.guid);
             if (c == null)
             {
                 Debug.LogWarning(
-                    $"Try to Play a card that is not in the inventory: {card.Guid} {card.face.ToString()} {card.color.ToString()}");
+                    $"Try to Play a card that is not in the inventory: {card.guid} {card.face.ToString()} {card.color.ToString()}");
                 return;
             }
 
