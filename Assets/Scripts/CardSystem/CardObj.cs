@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using IO.Swagger.Model;
 using Mirror;
 using Telepathy;
@@ -83,6 +84,12 @@ namespace FishONU.CardSystem
         public CardInfo GetCardInfo()
         {
             return data;
+        }
+
+        public void FadeOutAndDestory()
+        {
+            if (spriteRenderer == null) Destroy(gameObject);
+            spriteRenderer.DOFade(0, 0.5f).OnComplete(() => Destroy(gameObject));
         }
 
         private void OnMouseEnter()
