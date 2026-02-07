@@ -37,6 +37,9 @@ namespace FishONU.DebugTools
                 case MenuTab.Network:
                     DrawNetworkMenu();
                     break;
+                case MenuTab.Card:
+                    DrawCardMenu();
+                    break;
             }
 
             GUILayout.EndArea();
@@ -67,17 +70,17 @@ namespace FishONU.DebugTools
             if (GUILayout.Button("Add Card", GUILayout.Width(100)))
             {
                 // 寻找 inventory 然后 add card
-                GameObject.Find("Player").GetComponent<CardInventory>()?.DebugAddCard(new CardInfo());
+                GameObject.Find("Player").GetComponent<OwnerInventory>()?.DebugAddCard(new CardInfo());
             }
 
             if (GUILayout.Button("Remove Card", GUILayout.Width(100)))
             {
-                GameObject.Find("Player").GetComponent<CardInventory>()?.DebugRemoveCard();
+                GameObject.Find("Player").GetComponent<OwnerInventory>()?.DebugRemoveCard();
             }
 
             if (GUILayout.Button("Arrange Card", GUILayout.Width(100)))
             {
-                GameObject.Find("Player").GetComponent<CardInventory>()?.ArrangeAllCard();
+                GameObject.Find("Player").GetComponent<OwnerInventory>()?.ArrangeAllCard();
             }
 
             GUILayout.EndVertical();

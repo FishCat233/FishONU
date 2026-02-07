@@ -8,15 +8,15 @@ namespace FishONU.PlayerController
 {
     public class CardController : NetworkBehaviour
     {
-        [SerializeField] private CardInventory cardInventory;
+        [SerializeField] private OwnerInventory ownerInventory;
 
         private void Start()
         {
             // 不用 DI 也行，简单来，反正在 Start 初始化
-            if (cardInventory == null)
+            if (ownerInventory == null)
             {
-                cardInventory = gameObject.GetComponent<CardInventory>();
-                if (cardInventory == null)
+                ownerInventory = gameObject.GetComponent<OwnerInventory>();
+                if (ownerInventory == null)
                     Debug.LogError("CardInventory is null");
             }
         }
@@ -30,7 +30,7 @@ namespace FishONU.PlayerController
         [Server]
         private void ValidateAndPlayCard(CardInfo card)
         {
-            var c = cardInventory.cards.Find(c => c.guid == card.guid);
+            var c = ownerInventory.cards.Find(c => c.guid == card.guid);
             if (c == null)
             {
                 Debug.LogWarning(
@@ -38,7 +38,7 @@ namespace FishONU.PlayerController
                 return;
             }
 
-            cardInventory.PlayCard(c);
+            ownerInventory.PlayCard(c);
         }
     }
 }

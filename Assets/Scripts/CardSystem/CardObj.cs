@@ -31,7 +31,7 @@ namespace FishONU.CardSystem
         public bool isHover { get; private set; }
         public bool isDrag = false;
 
-        private CardInfo data;
+        private CardInfo data = new();
 
         public Action<CardObj> OnCardClick;
 
@@ -78,6 +78,11 @@ namespace FishONU.CardSystem
                 spriteRenderer.material = pair.material;
                 break;
             }
+        }
+
+        public CardInfo GetCardInfo()
+        {
+            return data;
         }
 
         private void OnMouseEnter()
