@@ -70,17 +70,17 @@ namespace FishONU.DebugTools
             if (GUILayout.Button("Add Card", GUILayout.Width(100)))
             {
                 // 寻找 inventory 然后 add card
-                GameObject.Find("Player").GetComponent<OwnerInventory>()?.DebugAddCard(new CardInfo());
+                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.DebugAddCard(new CardInfo());
             }
 
             if (GUILayout.Button("Remove Card", GUILayout.Width(100)))
             {
-                GameObject.Find("Player").GetComponent<OwnerInventory>()?.DebugRemoveCard();
+                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.DebugRemoveCard();
             }
 
             if (GUILayout.Button("Arrange Card", GUILayout.Width(100)))
             {
-                GameObject.Find("Player").GetComponent<OwnerInventory>()?.ArrangeAllCard();
+                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.ArrangeAllCard();
             }
 
             GUILayout.EndVertical();

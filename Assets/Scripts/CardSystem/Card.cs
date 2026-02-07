@@ -1,4 +1,5 @@
-﻿using UnityEngine.Serialization;
+﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FishONU.CardSystem
 {
@@ -35,22 +36,30 @@ namespace FishONU.CardSystem
     public class CardInfo
     {
         public Color color;
+
         public Face face;
+
+        // 卡牌唯一标识符
+        [SerializeField] private string guid = "";
+
+        public string Guid
+        {
+            get => guid;
+            set => guid = value;
+        }
 
         public CardInfo()
         {
             this.color = Color.Black;
             this.face = Face.Back;
+            Guid = System.Guid.NewGuid().ToString();
         }
 
         public CardInfo(Color color = Color.Black, Face face = Face.Back)
         {
             this.color = color;
             this.face = face;
-            guid = System.Guid.NewGuid().ToString();
+            Guid = System.Guid.NewGuid().ToString();
         }
-
-        // 卡牌唯一标识符
-        public readonly string guid;
     }
 }

@@ -1,6 +1,8 @@
-﻿namespace FishONU.CardSystem
+﻿using Mirror;
+
+namespace FishONU.CardSystem
 {
-    public class SecretInventory : BaseInventory
+    public class RivalInventory : NetworkBehaviour
     {
     }
 }

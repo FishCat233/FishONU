@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FishONU.CardSystem
 {
     [System.Serializable]
-    public class OwnerInventory : BaseInventory
+    public class OwnerInventory : NetworkBehaviour
     {
         [SerializeField] private GameObject cardPrefab;
 
@@ -59,6 +59,9 @@ namespace FishONU.CardSystem
             cardInfo ??= new CardInfo();
 
             cards.Add(cardInfo);
+
+            InstantiateAllCard();
+            ArrangeAllCard();
         }
 
         [Client]
@@ -66,8 +69,18 @@ namespace FishONU.CardSystem
         {
             if (cards.Count == 0) return;
 
-            cardInfo ??= cards[0];
+            // 随机删牌
+            if (cardInfo == null)
+            {
+                var count = cards.Count;
+                var index = Random.Range(0, count);
+                cardInfo = cards[index];
+            }
+
             cards.Remove(cardInfo);
+
+            InstantiateAllCard();
+            ArrangeAllCard();
         }
 
         [ClientRpc]
@@ -142,16 +155,16 @@ namespace FishONU.CardSystem
         {
             foreach (var card in cards)
             {
-                if (cardObjs.ContainsKey(card.guid)) continue;
+                if (cardObjs.ContainsKey(card.Guid)) continue;
 
                 var cardObj = Instantiate(cardPrefab, gameObject.transform);
                 cardObj.transform.position = cardSpawnPos;
                 cardObj.GetComponent<CardObj>().Load(card);
-                cardObjs.Add(card.guid, cardObj);
+                cardObjs.Add(card.Guid, cardObj);
             }
 
             // clean not exist card
-            var cardGuidSet = new HashSet<string>(cards.Select(c => c.guid));
+            var cardGuidSet = new HashSet<string>(cards.Select(c => c.Guid));
             var toRemove = new List<string>();
             foreach (var pair in cardObjs)
             {
@@ -184,10 +197,14 @@ namespace FishONU.CardSystem
             // TODO: arrange card horizontally center
             for (var i = 0; i < cards.Count; i++)
             {
-                var t = cardObjs[cards[i].guid].transform;
-                var targetPos = new Vector3(i * cardWidth, 0, 0);
-                t.DOKill();
-                t.transform.DOMove(targetPos, 0.5f).SetEase(Ease.InQuad);
+                var guid = cards[i].Guid;
+                if (cardObjs.TryGetValue(guid, out var obj))
+                {
+                    var t = obj.transform;
+                    var targetPos = new Vector3(i * cardWidth, 0, 0);
+                    t.DOKill();
+                    t.transform.DOMove(targetPos, 0.5f).SetEase(Ease.InOutQuad);
+                }
             }
         }
     }
