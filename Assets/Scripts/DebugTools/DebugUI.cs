@@ -1,11 +1,20 @@
 ﻿using System;
+using FishONU.CardSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FishONU.DebugTools
 {
     public class DebugUI : MonoBehaviour
     {
-        public bool Display = false;
+        public MenuTab display = MenuTab.None;
+
+        public enum MenuTab
+        {
+            None,
+            Network,
+            Card
+        }
 
         public string address { get; private set; }
         public string port { get; private set; }
@@ -18,13 +27,23 @@ namespace FishONU.DebugTools
 
         private void OnGUI()
         {
-            if (Display) DrawMenu();
-        }
+            if (display == MenuTab.None) return;
 
-        private void DrawMenu()
-        {
             GUI.Box(new Rect(20, 20, 400, 400), "Debug Menu");
             GUILayout.BeginArea(new Rect(25, 45, 350, 300));
+
+            switch (display)
+            {
+                case MenuTab.Network:
+                    DrawNetworkMenu();
+                    break;
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private void DrawNetworkMenu()
+        {
             GUILayout.BeginVertical("box");
             GUILayout.BeginHorizontal();
             GUILayout.Label("Address: ");
@@ -40,7 +59,28 @@ namespace FishONU.DebugTools
             }
 
             GUILayout.EndVertical();
-            GUILayout.EndArea();
+        }
+
+        private void DrawCardMenu()
+        {
+            GUILayout.BeginVertical("box");
+            if (GUILayout.Button("Add Card", GUILayout.Width(100)))
+            {
+                // 寻找 inventory 然后 add card
+                GameObject.Find("Player").GetComponent<CardInventory>()?.DebugAddCard(new CardInfo());
+            }
+
+            if (GUILayout.Button("Remove Card", GUILayout.Width(100)))
+            {
+                GameObject.Find("Player").GetComponent<CardInventory>()?.DebugRemoveCard();
+            }
+
+            if (GUILayout.Button("Arrange Card", GUILayout.Width(100)))
+            {
+                GameObject.Find("Player").GetComponent<CardInventory>()?.ArrangeAllCard();
+            }
+
+            GUILayout.EndVertical();
         }
     }
 }

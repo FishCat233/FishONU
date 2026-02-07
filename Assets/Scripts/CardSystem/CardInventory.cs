@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using Mirror;
 using UnityEngine;
 
@@ -23,21 +24,19 @@ namespace FishONU.CardSystem
         public Vector2 stackOffset = new Vector2(0.15f, -0.15f); // 叠放偏移
         public float smoothMoveTime = 0.2f; // 卡牌平滑移动时间（0则瞬移）
 
-
-        [ClientRpc]
-        public void RpcAddCard(CardInfo cardInfo)
+        [Client]
+        public void DebugAddCard(CardInfo cardInfo)
         {
             cards.Add(cardInfo);
-            // TODO: display card
-            // display card
-            // Instantiate(cardPrefab);
         }
 
-        [ClientRpc]
-        public void RpcRemoveCard(CardInfo cardInfo)
+        [Client]
+        public void DebugRemoveCard(CardInfo cardInfo = null)
         {
+            if (cards.Count == 0) return;
+
+            cardInfo ??= cards[0];
             cards.Remove(cardInfo);
-            // TODO: display card
         }
 
         [Server]
@@ -45,14 +44,31 @@ namespace FishONU.CardSystem
         {
             // TODO: play card
             Debug.Log($"play card: face: {card.face.ToString()}; color: {card.color.ToString()}");
-            RpcRemoveCard(card);
+            cards.Remove(card);
         }
 
         [Client]
-        private void ArrangeAllCard()
+        public void ArrangeAllCard()
         {
             // TODO: arrange all card
             if (cards.Count == 0) return;
+
+            switch (cardArrangeType)
+            {
+                case ArrangeType.HorizontalCenter:
+                    ArrangeHorizontalCenter();
+                    break;
+                case ArrangeType.StackOffset:
+                case ArrangeType.StackOverlap:
+                    // TODO:
+                    break;
+            }
+        }
+
+        [Client]
+        private void ArrangeHorizontalCenter()
+        {
+            // TODO: arrange card horizontally center
         }
 
         private void OnCardListChanged(List<CardInfo> old, List<CardInfo> cur)

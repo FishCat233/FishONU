@@ -34,10 +34,23 @@ namespace FishONU.CardSystem
     [System.Serializable]
     public class CardInfo
     {
-        public Color color = Color.Black;
-        public Face face = Face.Back;
+        public Color color;
+        public Face face;
+
+        public CardInfo()
+        {
+            this.color = Color.Black;
+            this.face = Face.Back;
+        }
+
+        public CardInfo(Color color = Color.Black, Face face = Face.Back)
+        {
+            this.color = color;
+            this.face = face;
+            guid = System.Guid.NewGuid().ToString();
+        }
 
         // 卡牌唯一标识符
-        public readonly string guid = System.Guid.NewGuid().ToString();
+        public readonly string guid;
     }
 }
