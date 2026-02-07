@@ -36,20 +36,14 @@ namespace FishONU.CardSystem
                 cardSpawnPos = gameObject.transform.position;
         }
 
-        private void OnEnable()
+        public override void OnStartClient()
         {
-            if (isClient)
-            {
-                _syncCards.Callback += OnSyncCardChange;
-            }
+            _syncCards.Callback += OnSyncCardChange;
         }
 
-        private void OnDisable()
+        public override void OnStopClient()
         {
-            if (isClient)
-            {
-                _syncCards.Callback -= OnSyncCardChange;
-            }
+            _syncCards.Callback -= OnSyncCardChange;
         }
 
 
@@ -83,21 +77,6 @@ namespace FishONU.CardSystem
             ArrangeAllCard();
         }
 
-        [ClientRpc]
-        public void RpcAddCard(CardInfo cardInfo)
-        {
-            // TODO:
-            InstantiateAllCard();
-            ArrangeAllCard();
-        }
-
-        [ClientRpc]
-        public void RpcRemoveCard(CardInfo cardInfo)
-        {
-            // TODO:
-            InstantiateAllCard();
-            ArrangeAllCard();
-        }
 
         [Client]
         private void OnSyncCardChange(SyncList<CardInfo>.Operation op, int index, CardInfo oldItem, CardInfo newItem)
@@ -153,6 +132,7 @@ namespace FishONU.CardSystem
         [Client]
         public void InstantiateAllCard()
         {
+            // instantiate new cards
             foreach (var card in cards)
             {
                 if (cardObjs.ContainsKey(card.Guid)) continue;
@@ -163,7 +143,7 @@ namespace FishONU.CardSystem
                 cardObjs.Add(card.Guid, cardObj);
             }
 
-            // clean not exist card
+            // clean non-exist card
             var cardGuidSet = new HashSet<string>(cards.Select(c => c.Guid));
             var toRemove = new List<string>();
             foreach (var pair in cardObjs)
@@ -178,14 +158,24 @@ namespace FishONU.CardSystem
                 // TODO: add more animation
                 // Destroy(cardObjs[guid]);
                 var obj = cardObjs[guid];
-                if (obj.TryGetComponent<SpriteRenderer>(out var sp))
+
+                if (obj.TryGetComponent<CardObj>(out var card))
                 {
-                    sp.DOFade(0, 0.5f).OnComplete(() => { Destroy(obj); });
+                    card.FadeOutAndDestory();
                 }
                 else
                 {
                     Destroy(obj);
                 }
+
+                // if (obj.TryGetComponent<SpriteRenderer>(out var sp))
+                // {
+                //     sp.DOFade(0, 0.5f).OnComplete(() => { Destroy(obj); });
+                // }
+                // else
+                // {
+                //     Destroy(obj);
+                // }
 
                 cardObjs.Remove(guid);
             }
