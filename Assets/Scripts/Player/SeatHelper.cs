@@ -29,13 +29,13 @@ namespace FishONU.Player
                     player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 0f));
                     break;
                 case 1:
-                    player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, -90f));
+                    player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
                     break;
                 case 2:
-                    player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, -180f));
+                    player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
                     break;
                 case 3:
-                    player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
+                    player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, -90f));
                     break;
             }
         }
