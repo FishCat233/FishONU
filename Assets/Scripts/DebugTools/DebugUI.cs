@@ -1,6 +1,8 @@
 ﻿using System;
 using FishONU.CardSystem;
+using FishONU.GamePlay.GameState;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 namespace FishONU.DebugTools
@@ -25,6 +27,14 @@ namespace FishONU.DebugTools
             port = "7777";
         }
 
+        private void Update()
+        {
+            if (Keyboard.current.f5Key.wasPressedThisFrame)
+            {
+                display = display == MenuTab.None ? MenuTab.Card : MenuTab.None;
+            }
+        }
+
         private void OnGUI()
         {
             if (display == MenuTab.None) return;
@@ -35,7 +45,7 @@ namespace FishONU.DebugTools
             switch (display)
             {
                 case MenuTab.Network:
-                    DrawNetworkMenu();
+                    DrawGameStateMenu();
                     break;
                 case MenuTab.Card:
                     DrawCardMenu();
@@ -45,22 +55,11 @@ namespace FishONU.DebugTools
             GUILayout.EndArea();
         }
 
-        private void DrawNetworkMenu()
+        private void DrawGameStateMenu()
         {
             GUILayout.BeginVertical("box");
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Address: ");
-            address = GUILayout.TextField(address);
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Port: ");
-            port = GUILayout.TextField(port);
-            GUILayout.EndHorizontal();
-            if (GUILayout.Button("Connect", GUILayout.Width(100)))
-            {
-                Debug.Log($"Try to connect {address}:{port}");
-            }
-
+            if (GUILayout.Button("Start Game", GUILayout.Width(100)))
+                GameObject.FindWithTag("GameStateManager")?.GetComponent<GameStateManager>()?.StartGame();
             GUILayout.EndVertical();
         }
 
@@ -70,7 +69,7 @@ namespace FishONU.DebugTools
             if (GUILayout.Button("Add Card", GUILayout.Width(100)))
             {
                 // 寻找 inventory 然后 add card
-                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.DebugAddCard(new CardInfo());
+                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.DebugAddCard();
             }
 
             if (GUILayout.Button("Remove Card", GUILayout.Width(100)))
@@ -103,7 +102,7 @@ namespace FishONU.DebugTools
             if (GUILayout.Button("Add Discard Card", GUILayout.Width(100)))
             {
                 // 寻找 inventory 然后 add card
-                GameObject.FindWithTag("Player").GetComponent<DiscardInventory>()?.AddCard(new CardInfo());
+                GameObject.FindWithTag("Player").GetComponent<DiscardInventory>()?.AddCard();
             }
 
             GUILayout.EndVertical();
