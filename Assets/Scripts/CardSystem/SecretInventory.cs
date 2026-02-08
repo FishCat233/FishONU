@@ -111,6 +111,7 @@ namespace FishONU.CardSystem
                 for (int i = 0; i < delta; i++)
                 {
                     var obj = Instantiate(cardPrefab, gameObject.transform);
+                    obj.GetComponent<CardObj>()?.Load(new CardInfo(Color.Black, Face.Back));
                     cards.Add(obj);
                 }
             }
