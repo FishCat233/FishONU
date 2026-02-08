@@ -22,10 +22,16 @@ namespace FishONU.CardSystem
         private void Awake()
         {
             // card width and height is 1.3f * 1.9f enough.
-            ArrangeStrategy = new LinearArrange
+            // ArrangeStrategy = new LinearArrange
+            // {
+            //     StartPosition = cardSpawnPosition,
+            //     PositionOffset = new Vector3(1.3f, 0f, 0f)
+            // };
+            ArrangeStrategy = new CenterLinearWithArc
             {
-                StartPosition = cardSpawnPosition,
-                PositionOffset = new Vector3(1.3f, 0f, 0f)
+                CenterPosition = cardSpawnPosition,
+                PositionOffset = new(0.65f, 0.1f, 0f),
+                RotationOffset = new(0f, 0f, -5f)
             };
         }
 
@@ -40,9 +46,26 @@ namespace FishONU.CardSystem
             syncCards.Callback -= OnSyncCardChange;
         }
 
+        [Command]
+        public void DebugCmdAddCard()
+        {
+            var cardInfo = new CardInfo((Color)Random.RandomRange(0, 4), (Face)Random.RandomRange(0, 15));
+
+            syncCards.Add(cardInfo);
+        }
+
+        [Command]
+        public void DebugCmdRemoveCard()
+        {
+            if (syncCards.Count == 0) return;
+
+            syncCards.RemoveAt(Random.Range(0, syncCards.Count));
+        }
+
         [Server]
         public override void DebugAddCard(CardInfo cardInfo = null)
         {
+            // TODO: 已知 bug 1: host 模式下加牌会导致 host client 能看到给其他 remote client 加的牌
             cardInfo ??= new CardInfo(Color.Blue, Face.DrawTwo);
 
             syncCards.Add(cardInfo);
@@ -121,9 +144,11 @@ namespace FishONU.CardSystem
                 if (cardObjs.TryGetValue(guid, out var obj))
                 {
                     var t = obj.transform;
-                    ArrangeStrategy.Calc(i, cards.Count, out var pos, out var _, out var _);
+                    ArrangeStrategy.Calc(i, cards.Count, out var pos, out var rotation, out var scale);
                     t.DOKill();
                     t.transform.DOLocalMove(pos, 0.5f).SetEase(Ease.InOutQuad);
+                    t.transform.DOLocalRotate(rotation, 0.5f).SetEase(Ease.InOutQuad);
+                    t.transform.DOScale(scale, 0.5f).SetEase(Ease.InOutQuad);
                 }
             }
         }

@@ -19,9 +19,6 @@ namespace FishONU.CardSystem
         [SerializeField] private int cardNumber;
         public override int CardNumber => cardNumber;
 
-        [Header("牌组摆放")] public Vector3 cardRotationOffset = new(0.1f, 0.13f, 0f);
-        public Vector3 cardSpaceOffset = new(0f, 0f, 0f);
-
         public List<GameObject> cards = new();
 
         private void Awake()
@@ -95,8 +92,11 @@ namespace FishONU.CardSystem
             for (int i = 0; i < cards.Count; i++)
             {
                 var t = cards[i].transform;
+                ArrangeStrategy.Calc(i, cards.Count, out var position, out var rotation, out var scale);
                 t.DOKill();
-                t.DOLocalMove(cardSpawnPosition + cardSpaceOffset * i, 0.5f).SetEase(Ease.InOutQuad);
+                t.DOLocalMove(position, 0.5f).SetEase(Ease.InOutQuad);
+                t.DOLocalRotate(rotation, 0.5f).SetEase(Ease.InOutQuad);
+                t.DOScale(scale, 0.5f).SetEase(Ease.InOutQuad);
             }
         }
 

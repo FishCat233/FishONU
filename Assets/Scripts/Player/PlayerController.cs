@@ -1,4 +1,5 @@
 ﻿using FishONU.CardSystem;
+using FishONU.CardSystem.CardArrangeStrategy;
 using Mirror;
 using UnityEngine;
 
@@ -32,6 +33,19 @@ namespace FishONU.Player
             }
         }
 
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+
+            if (secretInventory == null) secretInventory = GetComponent<SecretInventory>();
+
+            secretInventory.ArrangeStrategy = new CenterLinearWithArc
+            {
+                CenterPosition = new(0f, 0f, 0f),
+                PositionOffset = new(0.65f, 0.1f, 0f),
+                RotationOffset = new(0f, 0f, -5f)
+            };
+        }
 
         public override void OnStartLocalPlayer()
         {
@@ -39,25 +53,6 @@ namespace FishONU.Player
 
             CmdSitDown();
         }
-
-
-        // [Client]
-        // public override void OnStartClient()
-        // {
-        //     base.OnStartClient();
-        //
-        //     // 因为入座需要知道 local 和 remote，但是无法知道 local 和 remote 谁先存在，所以需要尝试入座
-        //     TryArrangeAllSeats();
-        // }
-        //
-        // [Client]
-        // public override void OnStartLocalPlayer()
-        // {
-        //     base.OnStartLocalPlayer();
-        //
-        //     // 因为入座需要知道 local 和 remote，但是无法知道 local 和 remote 谁先存在，所以需要尝试入座
-        //     TryArrangeAllSeats();
-        // }
 
         [Command]
         public void CmdSitDown()
@@ -70,6 +65,7 @@ namespace FishONU.Player
         [Command]
         public void CmdStandUp()
         {
+            // TODO:
         }
 
         [Client]

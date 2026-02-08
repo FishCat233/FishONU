@@ -1,13 +1,14 @@
 ﻿using System;
 using FishONU.CardSystem;
 using FishONU.GamePlay.GameState;
+using Mirror;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 namespace FishONU.DebugTools
 {
-    public class DebugUI : MonoBehaviour
+    public class DebugUI : NetworkBehaviour
     {
         public MenuTab display = MenuTab.None;
 
@@ -18,8 +19,8 @@ namespace FishONU.DebugTools
             Card
         }
 
-        public string address { get; private set; }
-        public string port { get; private set; }
+        public string address;
+        public string port;
 
         public void Awake()
         {
@@ -29,6 +30,7 @@ namespace FishONU.DebugTools
 
         private void Update()
         {
+            if (!isLocalPlayer) return;
             if (Keyboard.current.f5Key.wasPressedThisFrame)
             {
                 display = display == MenuTab.None ? MenuTab.Card : MenuTab.None;
@@ -37,6 +39,7 @@ namespace FishONU.DebugTools
 
         private void OnGUI()
         {
+            if (!isLocalPlayer) return;
             if (display == MenuTab.None) return;
 
             GUI.Box(new Rect(20, 20, 400, 400), "Debug Menu");
@@ -69,17 +72,17 @@ namespace FishONU.DebugTools
             if (GUILayout.Button("Add Card", GUILayout.Width(100)))
             {
                 // 寻找 inventory 然后 add card
-                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.DebugAddCard();
+                GetComponent<OwnerInventory>()?.DebugCmdAddCard();
             }
 
             if (GUILayout.Button("Remove Card", GUILayout.Width(100)))
             {
-                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.DebugRemoveCard();
+                GetComponent<OwnerInventory>()?.DebugCmdRemoveCard();
             }
 
             if (GUILayout.Button("Arrange Card", GUILayout.Width(100)))
             {
-                GameObject.FindWithTag("Player").GetComponent<OwnerInventory>()?.ArrangeAllCards();
+                GetComponent<OwnerInventory>()?.ArrangeAllCards();
             }
 
 
