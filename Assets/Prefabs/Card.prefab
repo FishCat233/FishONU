@@ -103,7 +103,7 @@ MonoBehaviour:
   red: {r: 255, g: 0, b: 0, a: 1}
   blue: {r: 0, g: 0, b: 255, a: 1}
   green: {r: 0, g: 255, b: 0, a: 1}
-  yellow: {r: 255, g: 255, b: 0, a: 1}
+  yellow: {r: 0.9137255, g: 0.9137255, b: 0, a: 1}
   black: {r: 0, g: 0, b: 0, a: 1}
   faceSprites:
   - face: 0
@@ -146,7 +146,7 @@ MonoBehaviour:
   - color: 2
     material: {fileID: 2100000, guid: adc8a967c40a3ec42902a3139faf30df, type: 2}
   - color: 3
-    material: {fileID: 2100000, guid: e7ead3db0b56746e9a3deb1bd6ef47c6, type: 2}
+    material: {fileID: 2100000, guid: 40d239bcf28efc04e8d38dcaa5c25a9d, type: 2}
   - color: 4
     material: {fileID: 2100000, guid: a723ac0940dee164da417afbc37615da, type: 2}
 --- !u!61 &2079949875547580292
