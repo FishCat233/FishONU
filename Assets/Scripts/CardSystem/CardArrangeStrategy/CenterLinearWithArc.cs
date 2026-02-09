@@ -13,7 +13,7 @@ namespace FishONU.CardSystem.CardArrangeStrategy
         // card width is 1.3f and height is 1.9f
         private static readonly Vector3 HalfCardOffset = new(0.65f, 0f, 0f);
 
-        public Vector3 Calc(int index, int totalCount, out Vector3 position, out Vector3 rotation, out Vector3 scale)
+        public void Calc(int index, int totalCount, out Vector3 position, out Vector3 rotation, out Vector3 scale)
         {
             // calc position
             var indexOffset = index - (totalCount - 1) * 0.5f;
@@ -32,7 +32,6 @@ namespace FishONU.CardSystem.CardArrangeStrategy
                 indexOffset * RotationOffset.z);
 
             scale = Vector3.one;
-            return position;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace FishONU.CardSystem.CardArrangeStrategy
     /// </summary>
     public interface IArrangeStrategy
     {
-        public Vector3 Calc(int index, int totalCount, out Vector3 position, out Vector3 rotation,
+        public void Calc(int index, int totalCount, out Vector3 position, out Vector3 rotation,
             out Vector3 scale);
     }
 }
