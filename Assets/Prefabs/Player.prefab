@@ -91,8 +91,6 @@ MonoBehaviour:
   cardSpawnPosition: {x: 0, y: 0, z: 0}
   syncCardNumber: 0
   cardNumber: 0
-  cardRotationOffset: {x: 0.1, y: 0.13, z: 0}
-  cardSpaceOffset: {x: 0.1, y: 0.15, z: 0}
   cards: []
 --- !u!114 &-1040178787059280909
 MonoBehaviour:
@@ -112,7 +110,7 @@ MonoBehaviour:
   syncInterval: 0
   ownerInventory: {fileID: 0}
   secretInventory: {fileID: 0}
-  seatIndex: 0
+  seatIndex: -1
 --- !u!114 &2302345486958595659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,4 +123,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34fd6e72e35e4e5eb72b5a58549f405b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMethod: 0
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   display: 0
+  address: 
+  port: 
