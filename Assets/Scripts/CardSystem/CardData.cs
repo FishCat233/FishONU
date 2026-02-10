@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace FishONU.CardSystem
 {
@@ -14,16 +13,16 @@ namespace FishONU.CardSystem
 
     public enum Face
     {
-        Zero,
-        One,
-        Two,
-        Three,
-        Four,
-        Five,
-        Six,
-        Seven,
-        Eight,
-        Nine,
+        Zero = 0,
+        One = 1,
+        Two = 2,
+        Three = 3,
+        Four = 4,
+        Five = 5,
+        Six = 6,
+        Seven = 7,
+        Eight = 8,
+        Nine = 9,
         Skip,
         Reverse,
         DrawTwo,
@@ -33,14 +32,14 @@ namespace FishONU.CardSystem
     }
 
     [System.Serializable]
-    public class CardInfo
+    public class CardData
     {
         public Color color;
 
         public Face face;
 
         // 卡牌唯一标识符
-        [SerializeField] private string guid = "";
+        [SerializeField] public string guid = "";
 
         public string Guid
         {
@@ -48,14 +47,14 @@ namespace FishONU.CardSystem
             set => guid = value;
         }
 
-        public CardInfo()
+        public CardData()
         {
             this.color = Color.Black;
             this.face = Face.Back;
             Guid = System.Guid.NewGuid().ToString();
         }
 
-        public CardInfo(Color color = Color.Black, Face face = Face.Back)
+        public CardData(Color color = Color.Black, Face face = Face.Back)
         {
             this.color = color;
             this.face = face;
