@@ -110,18 +110,6 @@ namespace FishONU.Player
             }
         }
 
-        [Command]
-        public void CmdSitDown()
-        {
-            SitDown();
-        }
-
-
-        [Command]
-        public void CmdStandUp()
-        {
-            StandUp();
-        }
 
         [Client]
         public void OnSeatIndexChange(int oldValue, int newValue)
@@ -164,15 +152,15 @@ namespace FishONU.Player
 
 
         [Command]
-        private void CmdTryPlayCard(CardInfo card)
+        private void CmdTryPlayCard(CardData card)
         {
             ValidateAndPlayCard(card);
         }
 
         [Server]
-        private void ValidateAndPlayCard(CardInfo card)
+        private void ValidateAndPlayCard(CardData card)
         {
-            var c = ownerInventory.cards.Find(c => c.Guid == card.Guid);
+            var c = ownerInventory.LocalCards.Find(c => c.Guid == card.Guid);
             if (c == null)
             {
                 Debug.LogWarning(
