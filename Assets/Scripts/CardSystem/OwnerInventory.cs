@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using DG.Tweening;
 using FishONU.CardSystem.CardArrangeStrategy;
 using Mirror;
+using Mirror.Examples.Common.Controllers.Tank;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -18,6 +20,30 @@ namespace FishONU.CardSystem
         public readonly SyncList<CardData> Cards = new();
 
         public int LocalCardNumber => LocalCards.Count;
+
+        private CardData _highLightCard;
+
+        // TODO: Highlight 在多人游玩的时候 remote client 报错，需要修
+        public CardData HighlightCard
+        {
+            get => _highLightCard;
+            set
+            {
+                if (value == null)
+                {
+                    Debug.LogError("HighlightCardObj is not CardObj");
+                    return;
+                }
+
+                if (!localCardObjs.ContainsKey(value.guid))
+                {
+                    Debug.LogError("HighlightCard is not in localCardObjs");
+                    return;
+                }
+
+                SetHighlightCard(value);
+            }
+        }
 
         #region View
 
@@ -70,6 +96,21 @@ namespace FishONU.CardSystem
 
                 return String.Compare(a.Guid, b.Guid, StringComparison.Ordinal);
             });
+        }
+
+
+        /// <summary>
+        /// 重新加载数据到视图
+        /// 
+        /// 疑似 bug: 不要和 SetHighlightCard 在同一帧使用，因为 RefreshView 会覆盖动画
+        /// 正常情况应该不会遇到，但是预防一下
+        /// </summary>
+        [Client]
+        public override void RefreshView()
+        {
+            base.RefreshView();
+
+            SetHighlightCard(_highLightCard);
         }
 
         [Client]
@@ -125,7 +166,7 @@ namespace FishONU.CardSystem
 
                 if (obj.TryGetComponent<CardObj>(out var card))
                 {
-                    card.FadeOutAndDestory();
+                    card.FadeOutAndDestroy();
                 }
                 else
                 {
@@ -135,6 +176,71 @@ namespace FishONU.CardSystem
 
                 localCardObjs.Remove(guid);
             }
+        }
+
+
+        [Client]
+        private void ResetHighlightCard()
+        {
+            if (_highLightCard == null) return;
+
+            Debug.Log("ResetHighlightCard");
+
+            var card = _highLightCard;
+            _highLightCard = null;
+
+
+            var index = LocalCards.FindIndex(c => c.guid == card.guid);
+            if (index == -1)
+                return;
+
+
+            var t = localCardObjs[card.guid].transform;
+
+            _highLightCard = null;
+
+            ArrangeStrategy.Calc(index, LocalCards.Count, out Vector3 pos, out var rot, out var scale);
+
+            t.DOKill();
+            t.DOLocalMove(pos, 0.2f).SetEase(Ease.InOutQuad);
+            t.DOLocalRotate(rot, 0.2f).SetEase(Ease.InOutQuad);
+            t.DOScale(scale, 0.2f).SetEase(Ease.InOutQuad);
+        }
+
+
+        [Client]
+        private void SetHighlightCard(CardData cardData = null)
+        {
+            if (cardData == null) return;
+
+            Debug.Log($"SetHighlightCard: {cardData.guid}");
+
+            // set the animation sign
+
+            if (_highLightCard != null && _highLightCard.guid == cardData.guid)
+            {
+                // 取消高光因为点了一张卡两次
+                ResetHighlightCard();
+                return;
+            }
+
+            // reset old highlight card.
+            // 不需要设置动画状态，因为上面已经保证了重置动画的卡片和接下来要进行动画的卡片是不一样的
+            ResetHighlightCard();
+
+            _highLightCard = cardData;
+
+            // highlight new card
+            var index = LocalCards.FindIndex(c => c.guid == cardData.guid);
+            if (index == -1) return;
+
+            // highlight animation
+            var t = localCardObjs[cardData.guid].transform;
+
+            t.DOKill();
+            t.DOLocalMove(t.localPosition + new Vector3(0, 0.2f, 0), 0.2f)
+                .SetEase(Ease.InOutQuad);
+            t.DOScale(1.2f, 0.2f).SetEase(Ease.InOutQuad);
         }
 
         #endregion

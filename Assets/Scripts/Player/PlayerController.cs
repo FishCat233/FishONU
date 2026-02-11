@@ -1,7 +1,10 @@
 ﻿using FishONU.CardSystem;
 using FishONU.CardSystem.CardArrangeStrategy;
+using FishONU.GamePlay.GameState;
 using Mirror;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Object = UnityEngine.Object;
 
 namespace FishONU.Player
 {
@@ -11,6 +14,7 @@ namespace FishONU.Player
     {
         [SerializeField, HideInInspector] private OwnerInventory ownerInventory;
         [SerializeField, HideInInspector] private SecretInventory secretInventory;
+        private GameStateManager gm;
 
         // TODO: 智能入座
 
@@ -33,7 +37,85 @@ namespace FishONU.Player
                 if (secretInventory == null)
                     Debug.LogError("SecretInventory is null");
             }
+
+            if (gm == null)
+            {
+                gm = GameObject.FindGameObjectWithTag("GameStateManager").GetComponent<GameStateManager>();
+                if (gm == null) Debug.LogError("GameStateManager is null");
+            }
         }
+
+        private void Update()
+        {
+            if (isLocalPlayer)
+            {
+                if (Mouse.current.leftButton.wasPressedThisFrame)
+                {
+                    if (Camera.main != null)
+                    {
+                        Vector2 mousePosition = Mouse.current.position.ReadValue();
+
+                        var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePosition), Vector2.zero);
+
+                        if (hit.collider != null && hit.collider.gameObject.CompareTag("Card"))
+                        {
+                            SelectCard(hit.collider.gameObject);
+                        }
+                    }
+                }
+            }
+        }
+
+        #region View
+
+        [Client]
+        private static void TryArrangeAllSeats()
+        {
+            var players = GameObject.FindGameObjectsWithTag("Player");
+            foreach (var player in players)
+            {
+                player.GetComponent<PlayerController>().TrySit();
+            }
+        }
+
+
+        [Client]
+        private void TrySit()
+        {
+            if (NetworkClient.localPlayer == null)
+            {
+                Debug.Log("Try to ArrangeSeat failed cause local player is null.");
+                return;
+            }
+
+            var localSeat = isLocalPlayer
+                ? 0
+                : SeatHelper.CalcLocalSeatIndex(
+                    NetworkClient.localPlayer.GetComponent<PlayerController>().seatIndex,
+                    seatIndex);
+
+            // var players = GameObject.FindGameObjectsWithTag("Player");
+
+            SeatHelper.SitAt(localSeat, gameObject);
+        }
+
+        [Client]
+        private void SelectCard(GameObject card)
+        {
+            // highlight card
+            var cardData = card.GetComponent<CardObj>().data;
+            if (cardData == null)
+            {
+                Debug.LogError("Try to select a null CardObj");
+                return;
+            }
+
+            ownerInventory.HighlightCard = cardData;
+        }
+
+        #endregion
+
+        #region Network
 
         public override void OnStartClient()
         {
@@ -63,7 +145,6 @@ namespace FishONU.Player
                 StandUp();
             }
         }
-
 
         [Server]
         public void SitDown()
@@ -110,7 +191,6 @@ namespace FishONU.Player
             }
         }
 
-
         [Client]
         public void OnSeatIndexChange(int oldValue, int newValue)
         {
@@ -119,42 +199,46 @@ namespace FishONU.Player
             TryArrangeAllSeats();
         }
 
-        [Client]
-        private static void TryArrangeAllSeats()
-        {
-            var players = GameObject.FindGameObjectsWithTag("Player");
-            foreach (var player in players)
-            {
-                player.GetComponent<PlayerController>().TrySit();
-            }
-        }
+        #endregion
 
+        #region GamePlay
 
         [Client]
-        private void TrySit()
+        public void TryPlayCard()
         {
-            if (NetworkClient.localPlayer == null)
+            var card = ownerInventory.HighlightCard;
+
+            if (card == null)
             {
-                Debug.Log("Try to ArrangeSeat failed cause localplayer is null.");
+                Debug.LogWarning("Try to play a null card");
                 return;
             }
 
-            var localSeat = isLocalPlayer
-                ? 0
-                : SeatHelper.CalcLocalSeatIndex(
-                    NetworkClient.localPlayer.GetComponent<PlayerController>().seatIndex,
-                    seatIndex);
-
-            // var players = GameObject.FindGameObjectsWithTag("Player");
-
-            SeatHelper.SitAt(localSeat, gameObject);
+            CmdTryPlayCard(card);
         }
 
-
         [Command]
-        private void CmdTryPlayCard(CardData card)
+        public void CmdTryPlayCard(CardData card)
         {
-            ValidateAndPlayCard(card);
+            if (card == null)
+            {
+                Debug.LogError($"Try to Play a null card");
+                return;
+            }
+
+            // validate card
+            var c = ownerInventory.Cards.Find(c => c.guid == card.guid);
+            if (c == null)
+            {
+                Debug.LogWarning(
+                    $"Try to Play a card that is not in the inventory: {card.guid} {card.face.ToString()} {card.color.ToString()}");
+                return;
+            }
+
+            // discard card
+            // TODO: 应该是 gm 干的，不过先这样吧
+            ownerInventory.Cards.Remove(c);
+            gm.discardPile.GetComponent<DiscardInventory>().Cards.Add(c);
         }
 
         [Server]
@@ -170,5 +254,7 @@ namespace FishONU.Player
 
             ownerInventory.PlayCard(c);
         }
+
+        #endregion
     }
 }
