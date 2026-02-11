@@ -14,8 +14,12 @@ namespace FishONU.Player
     [RequireComponent(typeof(SecretInventory))]
     public class PlayerController : NetworkBehaviour
     {
-        [SerializeField, HideInInspector] private OwnerInventory ownerInventory;
-        [SerializeField, HideInInspector] private SecretInventory secretInventory;
+        [SerializeField, HideInInspector] public OwnerInventory ownerInventory;
+        [SerializeField, HideInInspector] public SecretInventory secretInventory;
+
+        [SyncVar] public string guid;
+
+        [SyncVar] public string displayName;
 
         private GameStateManager gm;
 
@@ -151,6 +155,18 @@ namespace FishONU.Player
             {
                 StandUp();
             }
+        }
+
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+
+            guid = Guid.NewGuid().ToString();
+            displayName = IdentifierHelper.RandomIdentifier();
+
+
+
+            Debug.Log($"Player {displayName} with guid {guid} is created on server");
         }
 
         public override void OnStartLocalPlayer()
