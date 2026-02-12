@@ -9,6 +9,7 @@ using FishONU.Utils;
 using Mirror;
 using Mirror.Examples.Common.Controllers.Tank;
 using Unity.VisualScripting;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 using Color = FishONU.CardSystem.Color;
@@ -18,14 +19,19 @@ namespace FishONU.GamePlay.GameState
     public class GameStateManager : NetworkBehaviour
     {
         [SyncVar(hook = nameof(OnStateChange))]
-        private GameStateEnum CurrentStateEnum = GameStateEnum.None;
+        private GameStateEnum syncStateEnum = GameStateEnum.None;
+
+        private readonly SyncList<string> syncPlayersList = new();
 
 
         // TODO: 早晚得和 PlayerController 的座位合并一下
-        [SyncVar] public int currentPlayerIndex = 0;
+        [SyncVar(hook = nameof(OnCurrentPlayerIndexChange))]
+        public int currentPlayerIndex;
+
         [SyncVar] public int turnDirection = 1;
-        [SyncVar] public int drawPenaltyStack = 0;
+        [SyncVar] public int drawPenaltyStack;
         [SyncVar] public CardData topCardData = new CardData();
+        // [SyncVar] public CardData effectingCardData; // 正在生效的功能卡
 
         public GameState LocalState { get; private set; }
 
@@ -39,7 +45,12 @@ namespace FishONU.GamePlay.GameState
         public GameObject drawPile;
         public GameObject discardPile;
 
-        public Action<GameStateEnum, GameStateEnum> OnStateEnumChange;
+        public DiscardInventory discardPileInventory;
+        public OwnerInventory drawPileInventory;
+
+        public Action<GameStateEnum, GameStateEnum> OnStateEnumChangeAction;
+        public Action<int, int> OnCurrentPlayerIndexChangeAction;
+
 
         public override void OnStartServer()
         {
@@ -81,17 +92,48 @@ namespace FishONU.GamePlay.GameState
             Debug.Log("Server Instantiate Pile");
 
             drawPile = Instantiate(drawPilePrefab, drawPileSpawnAnchor.position, drawPileSpawnAnchor.rotation);
+
+            drawPileInventory = drawPile.GetComponent<OwnerInventory>();
+            if (drawPileInventory == null)
+            {
+                Debug.LogError("drawPileInventory is null");
+            }
+
             NetworkServer.Spawn(drawPile);
 
 
             discardPile = Instantiate(discardPilePrefab, discardPileSpawnAnchor.position,
                 discardPileSpawnAnchor.rotation);
+
+            discardPileInventory = discardPile.GetComponent<DiscardInventory>();
+            if (discardPileInventory == null)
+            {
+                Debug.LogError("discardPileInventory is null");
+            }
+
             NetworkServer.Spawn(discardPile);
         }
 
         #endregion
 
         #region Network
+
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+
+            if (isClientOnly)
+                syncPlayersList.OnChange += OnPlayersListChange;
+        }
+
+        public override void OnStopClient()
+        {
+            base.OnStopClient();
+
+            if (isClientOnly)
+                syncPlayersList.OnChange -= OnPlayersListChange;
+        }
+
 
         [Server]
         public void StartGame()
@@ -119,6 +161,7 @@ namespace FishONU.GamePlay.GameState
                 .Where(p => p != null)
                 .ToArray();
             players.AddRange(currentPlayers);
+            syncPlayersList.AddRange(currentPlayers.Select(p => p.guid));
 
 
             ChangeState(GameStateEnum.Prepare);
@@ -134,10 +177,10 @@ namespace FishONU.GamePlay.GameState
 
             LocalState.Enter(this);
 
-            OnStateEnumChange?.Invoke(oldStateEnum, stateEnum);
+            OnStateEnumChangeAction?.Invoke(oldStateEnum, stateEnum);
 
             if (isServer)
-                CurrentStateEnum = stateEnum;
+                syncStateEnum = stateEnum;
         }
 
         [Client]
@@ -145,6 +188,59 @@ namespace FishONU.GamePlay.GameState
         {
             if (isServer) return;
             ChangeState(newValue);
+        }
+
+        [Client]
+        private void OnPlayersListChange(SyncList<string>.Operation op, int index, string value)
+        {
+            PlayerController p;
+            switch (op)
+            {
+                case SyncList<string>.Operation.OP_ADD:
+                case SyncList<string>.Operation.OP_INSERT:
+                    Debug.Log($"Player {value} joined");
+                    p = PlayerController.FindPlayerByGuid(value);
+                    if (p == null)
+                    {
+                        Debug.LogError($"Player {value} not found");
+                        return;
+                    }
+
+                    players.Insert(index, p);
+                    break;
+
+                case SyncList<string>.Operation.OP_CLEAR:
+                    Debug.Log("Players list cleared");
+                    players.Clear();
+                    break;
+
+                case SyncList<string>.Operation.OP_SET:
+                    Debug.Log($"Player {value} set at {index}");
+                    p = PlayerController.FindPlayerByGuid(value);
+                    if (p == null)
+                    {
+                        Debug.LogError($"Player {value} not found");
+                        return;
+                    }
+
+                    players[index] = p;
+                    break;
+
+                case SyncList<string>.Operation.OP_REMOVEAT:
+                    Debug.Log($"Player {value} removed at {index}");
+                    players.RemoveAt(index);
+                    break;
+
+                default:
+                    Debug.LogError($"Unknown operation {op}");
+                    break;
+            }
+        }
+
+        [Client]
+        private void OnCurrentPlayerIndexChange(int oldValue, int newValue)
+        {
+            OnCurrentPlayerIndexChangeAction?.Invoke(oldValue, newValue);
         }
 
         #endregion
@@ -170,14 +266,6 @@ namespace FishONU.GamePlay.GameState
                 Debug.Log($"Player {playerGuid} not found");
             }
 
-            // TODO: pile controller
-            var discardPileInventory = discardPile.GetComponent<DiscardInventory>();
-            if (discardPileInventory == null)
-            {
-                Debug.LogError($"discardPile.GetComponent<DiscardInventory>() is null");
-                return;
-            }
-
             player.RemoveCard(card);
             discardPileInventory.Cards.Add(card);
 
@@ -185,8 +273,33 @@ namespace FishONU.GamePlay.GameState
 
             Debug.Log($"Player {playerGuid} plays card {card}");
 
-            NextPlayer();
-            // TODO: 先不管功能牌，把 PlayerTurnState 搞好再说
+            EndTurn();
+        }
+
+        [Server]
+        public void EndTurn(bool checkSpecCard = true)
+        {
+            // TODO: 胜利结算逻辑
+
+            // 检查是否要洗牌
+            if (drawPileInventory.Cards.Count == 0)
+                ShuffleDrawPile();
+
+            // TODO: 写功能牌
+            // 检查是否有功能牌
+            if (checkSpecCard &&
+                topCardData.face
+                    is Face.Skip
+                    or Face.Reverse
+               )
+            {
+                ChangeState(GameStateEnum.AffectedTurn);
+            }
+            else
+            {
+                TurnIndexNext();
+                ChangeState(GameStateEnum.PlayerTurn);
+            }
         }
 
         [Server]
@@ -195,26 +308,23 @@ namespace FishONU.GamePlay.GameState
             // TODO:
             if (playerGuid == null)
             {
-                Debug.LogError($"DrawCard: guid: {playerGuid}");
+                Debug.LogError($"DrawCard: playerGuid is null");
                 return;
+            }
+
+            // 检查是否需要洗牌
+            if (drawPileInventory.Cards.Count == 0)
+            {
+                ShuffleDrawPile();
             }
 
             // 抽卡
-            var player = players.Find(p => p.guid == playerGuid);
+            var player = PlayerController.FindPlayerByGuid(playerGuid);
             if (player == null)
             {
-                Debug.Log($"Player {playerGuid} not found");
+                Debug.Log($"Player not found");
                 return;
             }
-
-            // TODO: pile controller
-            var drawPileInventory = drawPile.GetComponent<OwnerInventory>();
-            if (drawPileInventory == null)
-            {
-                Debug.LogError($"drawPile.GetComponent<OwnerInventory>() is null");
-                return;
-            }
-
 
             if (drawPileInventory.Cards.TryPop(out var card))
             {
@@ -226,9 +336,22 @@ namespace FishONU.GamePlay.GameState
                 return;
             }
 
-            Debug.Log($"Player {playerGuid} draws card");
+            Debug.Log($"Player {playerGuid}({player.displayName}) draws card");
 
-            NextPlayer();
+            EndTurn(false);
+        }
+
+        [Server]
+        public void ShuffleDrawPile()
+        {
+            var cards = discardPileInventory.Cards
+                .Select(c => c)
+                .ToList();
+
+            cards.FisherYatesShuffle();
+
+            discardPileInventory.Cards.Clear();
+            drawPileInventory.Cards.AddRange(cards);
         }
 
 
@@ -276,19 +399,17 @@ namespace FishONU.GamePlay.GameState
             if (ownerInventory == null)
                 return false;
 
-            return ownerInventory.Cards.Count > 0;
-
             // TODO: 自动洗牌
+            if (ownerInventory.Cards.Count == 0) ShuffleDrawPile();
+
+            return ownerInventory.Cards.Count > 0;
         }
 
         [Server]
-        public void NextPlayer()
+        public void TurnIndexNext()
         {
             // set index
-            currentPlayerIndex = (currentPlayerIndex + turnDirection) % players.Count;
-
-            // set state
-            ChangeState(GameStateEnum.PlayerTurn);
+            currentPlayerIndex = (currentPlayerIndex + turnDirection + players.Count) % players.Count;
         }
 
         #endregion

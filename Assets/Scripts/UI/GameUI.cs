@@ -37,7 +37,7 @@ namespace FishONU.UI
             if (gm == null) Debug.LogError("GameStateManager is null");
             else
             {
-                gm.OnStateEnumChange += OnGameStatEnumChange;
+                gm.OnCurrentPlayerIndexChangeAction += OnCurrentPlayerChange;
             }
         }
 
@@ -46,7 +46,7 @@ namespace FishONU.UI
             if (player != null) UnbindPlayer();
             if (gm != null)
             {
-                gm.OnStateEnumChange -= OnGameStatEnumChange;
+                gm.OnCurrentPlayerIndexChangeAction -= OnCurrentPlayerChange;
             }
         }
 
@@ -124,7 +124,7 @@ namespace FishONU.UI
             RefreshView();
         }
 
-        private void OnGameStatEnumChange(GameStateEnum oldValue, GameStateEnum newValue)
+        private void OnCurrentPlayerChange(int oldValue, int newValue)
         {
             var p = gm.GetCurrentPlayer();
 
