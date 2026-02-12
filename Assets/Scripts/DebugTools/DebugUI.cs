@@ -76,7 +76,7 @@ namespace FishONU.DebugTools
 
 
         // 这里的 T 是组件类型，action 是你要执行的操作
-        private void DebugBtn<T>(string label, Action<T> action, string targetTag = "Self", float width = 150)
+        private void DebugBtn<T>(string label, Action<T> action, string targetTag = "Self", float width = 250)
             where T : Component
         {
             if (GUILayout.Button(label, GUILayout.Width(width)))
@@ -107,6 +107,9 @@ namespace FishONU.DebugTools
 
             DebugBtn<OwnerInventory>("Command Add Card", inv => inv.DebugCmdAddCard());
             DebugBtn<OwnerInventory>("Command Remove Card", inv => inv.DebugCmdRemoveCard());
+
+            DebugBtn<OwnerInventory>("Command Add Reverse Card", inv => inv.DebugCmdAddReverseCard());
+            DebugBtn<OwnerInventory>("Command Add Skip Card", inv => inv.DebugCmdAddSkipCard());
 
             DebugBtn<OwnerInventory>("Command Add DrawPile Card", inv => inv.DebugCmdAddCard(), "DrawPile");
             DebugBtn<OwnerInventory>("Command Add DrawPile Card", inv => inv.DebugCmdRemoveCard(), "DrawPile");
