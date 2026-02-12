@@ -74,7 +74,10 @@ namespace FishONU.CardSystem
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return guid == other.guid && color == other.color && face == other.face;
+            return guid == other.guid
+                   && color == other.color
+                   && face == other.face
+                   && secondColor == other.secondColor;
         }
 
         public override bool Equals(object obj) => Equals(obj as CardData);
