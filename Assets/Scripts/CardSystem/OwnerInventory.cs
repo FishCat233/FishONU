@@ -308,6 +308,20 @@ namespace FishONU.CardSystem
         }
 
         [Command]
+        public void DebugCmdAddReverseCard()
+        {
+            var card = new CardData(Color.Black, Face.Reverse);
+
+            Cards.Add(card);
+        }
+
+        [Command]
+        public void DebugCmdAddSkipCard()
+        {
+            Cards.Add(new CardData(Color.Black, Face.Skip));
+        }
+
+        [Command]
         public void DebugCmdRemoveCard()
         {
             if (Cards.Count == 0) return;
