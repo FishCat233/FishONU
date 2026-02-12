@@ -110,7 +110,12 @@ namespace FishONU.CardSystem
                 {
                     var t = obj.transform;
                     ArrangeStrategy.Calc(i, Cards.Count, out var pos, out var rotation, out var scale);
+
                     t.DOKill();
+
+                    // 跳过 z 轴动画
+                    t.position = new Vector3(t.position.x, t.position.y, pos.z);
+
                     t.transform.DOLocalMove(pos, 0.5f).SetEase(Ease.InOutQuad);
                     t.transform.DOLocalRotate(rotation, 0.5f).SetEase(Ease.InOutQuad);
                     t.transform.DOScale(scale, 0.5f).SetEase(Ease.InOutQuad);
@@ -191,12 +196,6 @@ namespace FishONU.CardSystem
             }
 
             RefreshView();
-        }
-
-        [ClientRpc]
-        public void RpcManualSyncCardView(CardData cardData)
-        {
-            ClientFakeAddCard(cardData);
         }
 
         #endregion
