@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using FishONU.UI;
+using UnityEngine;
 
 namespace FishONU.Player
 {
@@ -14,12 +15,15 @@ namespace FishONU.Player
 
         public static void SitAt(int localSeatIndex, GameObject player)
         {
-            var anchor = GameObject.Find($"SeatAnchor{localSeatIndex}");
+            var anchorProvider = AnchorProvider.Instance;
 
-            if (anchor == null)
+
+            if (anchorProvider == null)
             {
                 Debug.LogError($"SeatAnchor{localSeatIndex} not found");
             }
+
+            var anchor = anchorProvider.fourSeatsAnchors[localSeatIndex];
 
             player.transform.position = anchor.transform.position;
 
