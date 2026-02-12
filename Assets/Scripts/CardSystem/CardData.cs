@@ -35,10 +35,10 @@ namespace FishONU.CardSystem
     [Serializable]
     public class CardData : IEquatable<CardData>
     {
-        public Color color;
-        public Color secondColor; // 用于黑牌变色，默认值是 Black
+        public Color color = Color.Black;
+        public Color secondColor = Color.Black; // 用于黑牌变色，默认值是 Black
 
-        public Face face;
+        public Face face = Face.Back;
 
         // 卡牌唯一标识符
         [SerializeField] public string guid = "";
@@ -51,9 +51,6 @@ namespace FishONU.CardSystem
 
         public CardData()
         {
-            color = Color.Black;
-            face = Face.Back;
-            secondColor = Color.Black;
             Guid = System.Guid.NewGuid().ToString();
         }
 
@@ -62,6 +59,13 @@ namespace FishONU.CardSystem
             this.color = color;
             this.face = face;
             Guid = System.Guid.NewGuid().ToString();
+        }
+
+        public void TryDyingSecondColor(Color dyingColor)
+        {
+            if (secondColor != Color.Black)
+                Debug.LogWarning("Card Try to dying twice");
+            secondColor = dyingColor;
         }
 
 
