@@ -27,7 +27,7 @@ namespace FishONU.GamePlay.GameState
 
             #region 抽牌堆初始化
 
-            var drawPileOwnerInventory = manager.drawPile.GetComponent<OwnerInventory>();
+            var drawPileOwnerInventory = manager.drawPileInventory;
 
             drawPileOwnerInventory.Cards.Clear();
 
@@ -71,7 +71,7 @@ namespace FishONU.GamePlay.GameState
 
             #region 弃牌堆初始化
 
-            var discardPileInventory = manager.discardPile.GetComponent<DiscardInventory>();
+            var discardPileInventory = manager.discardPileInventory;
             discardPileInventory.Cards.Clear();
 
             #endregion

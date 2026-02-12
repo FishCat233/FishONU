@@ -24,7 +24,9 @@ namespace FishONU.GamePlay.GameState
 
 
         // TODO: 早晚得和 PlayerController 的座位合并一下
-        [SyncVar] public int currentPlayerIndex;
+        [SyncVar(hook = nameof(OnCurrentPlayerIndexChange))]
+        public int currentPlayerIndex;
+
         [SyncVar] public int turnDirection = 1;
         [SyncVar] public int drawPenaltyStack;
         [SyncVar] public CardData topCardData = new CardData();
@@ -41,7 +43,12 @@ namespace FishONU.GamePlay.GameState
         public GameObject drawPile;
         public GameObject discardPile;
 
-        public Action<GameStateEnum, GameStateEnum> OnStateEnumChange;
+        public DiscardInventory discardPileInventory;
+        public OwnerInventory drawPileInventory;
+
+        public Action<GameStateEnum, GameStateEnum> OnStateEnumChangeAction;
+        public Action<int, int> OnCurrentPlayerIndexChangeAction;
+
 
         public override void OnStartServer()
         {
@@ -83,11 +90,25 @@ namespace FishONU.GamePlay.GameState
             Debug.Log("Server Instantiate Pile");
 
             drawPile = Instantiate(drawPilePrefab, drawPileSpawnAnchor.position, drawPileSpawnAnchor.rotation);
+
+            drawPileInventory = drawPile.GetComponent<OwnerInventory>();
+            if (drawPileInventory == null)
+            {
+                Debug.LogError("drawPileInventory is null");
+            }
+
             NetworkServer.Spawn(drawPile);
 
 
             discardPile = Instantiate(discardPilePrefab, discardPileSpawnAnchor.position,
                 discardPileSpawnAnchor.rotation);
+
+            discardPileInventory = discardPile.GetComponent<DiscardInventory>();
+            if (discardPileInventory == null)
+            {
+                Debug.LogError("discardPileInventory is null");
+            }
+
             NetworkServer.Spawn(discardPile);
         }
 
@@ -154,7 +175,7 @@ namespace FishONU.GamePlay.GameState
 
             LocalState.Enter(this);
 
-            OnStateEnumChange?.Invoke(oldStateEnum, stateEnum);
+            OnStateEnumChangeAction?.Invoke(oldStateEnum, stateEnum);
 
             if (isServer)
                 syncStateEnum = stateEnum;
@@ -174,6 +195,7 @@ namespace FishONU.GamePlay.GameState
             switch (op)
             {
                 case SyncList<string>.Operation.OP_ADD:
+                case SyncList<string>.Operation.OP_INSERT:
                     Debug.Log($"Player {value} joined");
                     p = PlayerController.FindPlayerByGuid(value);
                     if (p == null)
@@ -182,7 +204,7 @@ namespace FishONU.GamePlay.GameState
                         return;
                     }
 
-                    players.Add(p);
+                    players.Insert(index, p);
                     break;
 
                 case SyncList<string>.Operation.OP_CLEAR:
@@ -213,6 +235,12 @@ namespace FishONU.GamePlay.GameState
             }
         }
 
+        [Client]
+        private void OnCurrentPlayerIndexChange(int oldValue, int newValue)
+        {
+            OnCurrentPlayerIndexChangeAction?.Invoke(oldValue, newValue);
+        }
+
         #endregion
 
         #region Gameplay
@@ -234,14 +262,6 @@ namespace FishONU.GamePlay.GameState
             if (player == null)
             {
                 Debug.Log($"Player {playerGuid} not found");
-            }
-
-            // TODO: pile controller
-            var discardPileInventory = discardPile.GetComponent<DiscardInventory>();
-            if (discardPileInventory == null)
-            {
-                Debug.LogError($"discardPile.GetComponent<DiscardInventory>() is null");
-                return;
             }
 
             player.RemoveCard(card);
@@ -272,15 +292,6 @@ namespace FishONU.GamePlay.GameState
                 Debug.Log($"Player {playerGuid} not found");
                 return;
             }
-
-            // TODO: pile controller
-            var drawPileInventory = drawPile.GetComponent<OwnerInventory>();
-            if (drawPileInventory == null)
-            {
-                Debug.LogError($"drawPile.GetComponent<OwnerInventory>() is null");
-                return;
-            }
-
 
             if (drawPileInventory.Cards.TryPop(out var card))
             {
