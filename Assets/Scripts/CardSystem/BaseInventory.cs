@@ -9,6 +9,7 @@ namespace FishONU.CardSystem
     {
         // TODO: 卡牌变化时应该有一个从某点获取卡牌的动画，比如说抽牌的时候能看到牌从牌堆跑到手牌里的动画（后面写吧）
         [SerializeField] protected GameObject cardPrefab;
+
         [SerializeField] protected Vector3 cardSpawnPosition;
 
         private IArrangeStrategy _arrangeStrategy;
@@ -27,12 +28,10 @@ namespace FishONU.CardSystem
             }
         }
 
-
         protected virtual void Start()
         {
             if (cardPrefab == null) Debug.LogError("CardPrefab is null");
         }
-
 
         public abstract void ArrangeAllCards();
 

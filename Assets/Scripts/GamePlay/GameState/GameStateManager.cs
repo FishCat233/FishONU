@@ -5,7 +5,6 @@ using Mirror;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using Color = FishONU.CardSystem.Color;
 
@@ -18,7 +17,6 @@ namespace FishONU.GamePlay.GameState
 
         private readonly SyncList<string> syncPlayersList = new();
 
-
         // TODO: 早晚得和 PlayerController 的座位合并一下
         [SyncVar(hook = nameof(OnCurrentPlayerIndexChange))]
         public int currentPlayerIndex;
@@ -29,7 +27,6 @@ namespace FishONU.GamePlay.GameState
         [SyncVar] public CardData effectingCardData; // 正在生效的功能卡
 
         public GameState LocalState { get; private set; }
-
 
         [Header("预制体")] public GameObject drawPilePrefab;
         public Transform drawPileSpawnAnchor;
@@ -46,7 +43,6 @@ namespace FishONU.GamePlay.GameState
         public Action<GameStateEnum, GameStateEnum> OnStateEnumChangeAction;
         public Action<int, int> OnCurrentPlayerIndexChangeAction;
 
-
         public override void OnStartServer()
         {
             // load anchor
@@ -59,7 +55,7 @@ namespace FishONU.GamePlay.GameState
 
         // 动态状态机弄起来太麻烦了，还不如用静态状态机然后状态全塞这里
 
-        #endregion
+        #endregion StateData
 
         #region View
 
@@ -96,7 +92,6 @@ namespace FishONU.GamePlay.GameState
 
             NetworkServer.Spawn(drawPile);
 
-
             discardPile = Instantiate(discardPilePrefab, discardPileSpawnAnchor.position,
                 discardPileSpawnAnchor.rotation);
 
@@ -109,7 +104,7 @@ namespace FishONU.GamePlay.GameState
             NetworkServer.Spawn(discardPile);
         }
 
-        #endregion
+        #endregion View
 
         #region Network
 
@@ -129,7 +124,6 @@ namespace FishONU.GamePlay.GameState
                 syncPlayersList.OnChange -= OnPlayersListChange;
         }
 
-
         [Server]
         public void StartGame()
         {
@@ -139,7 +133,6 @@ namespace FishONU.GamePlay.GameState
                 Debug.LogError($"Game already started at state {LocalState}");
                 return;
             }
-
 
             // 虽然不懂怎么样但是我觉得在这写一个准没错
             if (isClient && !isServer)
@@ -157,7 +150,6 @@ namespace FishONU.GamePlay.GameState
                 .ToArray();
             players.AddRange(currentPlayers);
             syncPlayersList.AddRange(currentPlayers.Select(p => p.guid));
-
 
             ChangeState(GameStateEnum.Prepare);
         }
@@ -248,7 +240,7 @@ namespace FishONU.GamePlay.GameState
             OnCurrentPlayerIndexChangeAction?.Invoke(oldValue, newValue);
         }
 
-        #endregion
+        #endregion Network
 
         #region Gameplay
 
@@ -374,7 +366,6 @@ namespace FishONU.GamePlay.GameState
             return index == currentPlayerIndex;
         }
 
-
         [Server]
         public bool CanCardPlay(CardData card)
         {
@@ -394,6 +385,7 @@ namespace FishONU.GamePlay.GameState
                     case Face.DrawTwo:
                         // +2 -> +2/+4
                         return card.face == Face.DrawTwo || card.face == Face.WildDrawFour;
+
                     case Face.WildDrawFour:
                         // +4 -> +4
                         return card.face == Face.WildDrawFour;
@@ -438,8 +430,6 @@ namespace FishONU.GamePlay.GameState
             return ownerInventory.Cards.Count > 0;
         }
 
-
-
-        #endregion
+        #endregion Gameplay
     }
 }

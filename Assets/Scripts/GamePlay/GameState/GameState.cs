@@ -1,7 +1,4 @@
 ﻿using System;
-using Unity.VisualScripting;
-using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace FishONU.GamePlay.GameState
 {
@@ -51,7 +48,6 @@ namespace FishONU.GamePlay.GameState
         public static readonly AffectedTurn AffectedTurn = new();
         public static readonly GameOverState GameOver = new();
         public static readonly WaitingForColor WaitingForColor = new();
-
 
         public virtual void Enter(GameStateManager manager)
         {

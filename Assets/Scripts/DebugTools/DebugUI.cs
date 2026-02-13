@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FishONU.CardSystem;
+﻿using FishONU.CardSystem;
 using FishONU.GamePlay.GameState;
 using FishONU.Player;
 using Mirror;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.PlayerLoop;
-using UnityEngine.Serialization;
 
 namespace FishONU.DebugTools
 {
@@ -76,7 +73,6 @@ namespace FishONU.DebugTools
             GUILayout.EndArea();
         }
 
-
         // 这里的 T 是组件类型，action 是你要执行的操作
         private void DebugBtn<T>(string label, Action<T> action, string targetTag = "Self", float width = 250)
             where T : Component
@@ -129,7 +125,6 @@ namespace FishONU.DebugTools
 
             DebugBtn<DiscardInventory>("Command Add Discard Card", inv => inv.DebugCmdAddCard(), "DiscardPile");
             DebugBtn<DiscardInventory>("Command Remove Discard Card", inv => inv.DebugCmdRemoveCard(), "DiscardPile");
-
 
             GUILayout.EndVertical();
         }

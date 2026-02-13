@@ -68,7 +68,6 @@ namespace FishONU.CardSystem
             secondColor = dyingColor;
         }
 
-
         public bool Equals(CardData other)
         {
             if (other is null) return false;

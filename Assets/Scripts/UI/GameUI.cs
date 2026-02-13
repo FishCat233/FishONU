@@ -11,12 +11,15 @@ namespace FishONU.UI
     {
         [Header("玩家操作")]
         [SerializeField] private Button submitCardButton;
+
         [SerializeField] private Button drawCardButton;
+
         // WARNING: 变色按钮用的是 Unity Event，所以得去 Button 的 Inspector 里面找到 Bind
         [SerializeField] private GameObject secondColorPalette;
 
         [Header("信息显示")]
         [SerializeField] private TextMeshProUGUI currentTurnText;
+
         [SerializeField] public GameStateManager gm;
 
         public static GameUI Instance;
@@ -97,7 +100,6 @@ namespace FishONU.UI
 
         public void SelectSecondColor(string colorString)
         {
-
             if (player == null)
             {
                 Debug.LogError("PlayerController is null");
@@ -147,9 +149,7 @@ namespace FishONU.UI
             player.TryDrawCard();
         }
 
-
-
-        #endregion
+        #endregion View
 
         #region Outer Delegate Handler
 
@@ -188,6 +188,6 @@ namespace FishONU.UI
             RefreshView();
         }
 
-        #endregion
+        #endregion Outer Delegate Handler
     }
 }
