@@ -18,7 +18,7 @@ namespace FishONU.CardSystem.CardArrangeStrategy
             // 2. 计算横向位置 (X) - 这里的 Spacing 可以让中心更密集或更稀疏
             float x = indexOffset * (totalCount - 1) * Spacing;
 
-            // 3. 计算高度位置 (Y) 
+            // 3. 计算高度位置 (Y)
             // 我们不直接用圆公式，而是用 Cosine 波形来模拟弧度，这样更平滑且易控
             // 当 indexOffset 为 0 (中间) 时，Cos 为 1；当靠近边缘时，Cos 变小
             // 这里的 1.5f 弧度范围可以让曲线在边缘处下降得更明显

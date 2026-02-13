@@ -34,18 +34,23 @@ namespace FishONU.GamePlay.GameState
                 case Face.Skip:
                     ProcessSkip(manager);
                     break;
+
                 case Face.Reverse:
                     ProcessReverse(manager);
                     break;
+
                 case Face.DrawTwo:
                     ProcessDrawTwo(manager);
                     break;
+
                 case Face.Wild:
                     ProcessWild(manager);
                     break;
+
                 case Face.WildDrawFour:
                     ProcessWildDrawFour(manager);
                     break;
+
                 default:
                     // 普通牌的默认效果是进入下一回合
                     manager.TurnIndexNext();
@@ -82,11 +87,11 @@ namespace FishONU.GamePlay.GameState
                 case 1:
                     manager.turnDirection = -1;
                     break;
+
                 case -1:
                     manager.turnDirection = 1;
                     break;
             }
-
 
             manager.TurnIndexNext();
             manager.ChangeState(GameStateEnum.PlayerTurn);
@@ -119,6 +124,6 @@ namespace FishONU.GamePlay.GameState
             manager.ChangeState(GameStateEnum.WaitingForColor);
         }
 
-        #endregion
+        #endregion Server
     }
 }

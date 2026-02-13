@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DG.Tweening;
+﻿using DG.Tweening;
 using FishONU.CardSystem.CardArrangeStrategy;
 using Mirror;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -99,10 +99,9 @@ namespace FishONU.CardSystem
             });
         }
 
-
         /// <summary>
         /// 重新加载数据到视图
-        /// 
+        ///
         /// 疑似 bug: 不要和 SetHighlightCard 在同一帧使用，因为 RefreshView 会覆盖动画
         /// 正常情况应该不会遇到，但是预防一下
         /// </summary>
@@ -135,7 +134,6 @@ namespace FishONU.CardSystem
                 }
             }
         }
-
 
         [Client]
         public override void InstantiateAllCards()
@@ -174,18 +172,14 @@ namespace FishONU.CardSystem
                     Destroy(obj);
                 }
 
-
                 localCardObjs.Remove(guid);
             }
         }
-
 
         [Client]
         private void ResetHighlightCardView(CardData cardData)
         {
             if (cardData == null) return;
-
-            Debug.Log("ResetHighlightCard");
 
             var index = LocalCards.FindIndex(c => c.guid == cardData.guid);
             if (index == -1) return;
@@ -205,13 +199,10 @@ namespace FishONU.CardSystem
             t.DOScale(scale, 0.2f).SetEase(Ease.InOutQuad);
         }
 
-
         [Client]
         private void SetHighlightCardView(CardData cardData)
         {
             if (cardData == null) return;
-
-            Debug.Log($"SetHighlightCard: {cardData.guid}");
 
             // highlight new card
             var index = LocalCards.FindIndex(c => c.guid == cardData.guid);
@@ -248,7 +239,7 @@ namespace FishONU.CardSystem
             SetHighlightCardView(_highLightCard);
         }
 
-        #endregion
+        #endregion View
 
         #region Network
 
@@ -289,13 +280,13 @@ namespace FishONU.CardSystem
             LocalCards.Remove(card);
         }
 
-        #endregion
+        #endregion Network
 
         #region GamePlay
 
         public bool HasCard(CardData cardData) => Cards.Contains(cardData);
 
-        #endregion
+        #endregion GamePlay
 
         #region Debug
 
@@ -339,6 +330,6 @@ namespace FishONU.CardSystem
             Cards.RemoveAt(Random.Range(0, Cards.Count));
         }
 
-        #endregion
+        #endregion Debug
     }
 }

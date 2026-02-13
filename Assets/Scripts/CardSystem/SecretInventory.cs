@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using DG.Tweening;
+﻿using DG.Tweening;
 using FishONU.CardSystem.CardArrangeStrategy;
 using Mirror;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FishONU.CardSystem
@@ -19,7 +19,6 @@ namespace FishONU.CardSystem
         public int LocalCardNumber { get; private set; }
 
         public List<GameObject> localCards = new();
-
 
         #region View
 
@@ -109,7 +108,7 @@ namespace FishONU.CardSystem
             }
         }
 
-        #endregion
+        #endregion View
 
         #region Network
 
@@ -163,7 +162,7 @@ namespace FishONU.CardSystem
             CardNumber = ownerInventory.Cards.Count;
         }
 
-        #endregion
+        #endregion Network
 
         #region Debug
 
@@ -179,6 +178,6 @@ namespace FishONU.CardSystem
             ClientRemoveCard(1);
         }
 
-        #endregion
+        #endregion Debug
     }
 }

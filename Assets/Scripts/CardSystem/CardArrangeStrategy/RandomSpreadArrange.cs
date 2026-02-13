@@ -14,7 +14,7 @@ namespace FishONU.CardSystem.CardArrangeStrategy
 
         public void Calc(int index, int totalCount, out Vector3 position, out Vector3 rotation, out Vector3 scale)
         {
-            // 如果请求的索引超出了当前存储的随机值，则生成新的随机值 
+            // 如果请求的索引超出了当前存储的随机值，则生成新的随机值
             while (_posOffset.Count <= totalCount)
             {
                 _posOffset.Add(new Vector3(

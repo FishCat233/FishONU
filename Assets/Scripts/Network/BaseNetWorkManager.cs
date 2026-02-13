@@ -1,7 +1,5 @@
-﻿using FishONU.Player;
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
-
 
 namespace FishONU.Network
 {

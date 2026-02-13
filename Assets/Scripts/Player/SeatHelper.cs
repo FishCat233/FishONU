@@ -17,7 +17,6 @@ namespace FishONU.Player
         {
             var anchorProvider = AnchorProvider.Instance;
 
-
             if (anchorProvider == null)
             {
                 Debug.LogError($"SeatAnchor{localSeatIndex} not found");
@@ -32,12 +31,15 @@ namespace FishONU.Player
                 case 0:
                     player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 0f));
                     break;
+
                 case 1:
                     player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
                     break;
+
                 case 2:
                     player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
                     break;
+
                 case 3:
                     player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, -90f));
                     break;

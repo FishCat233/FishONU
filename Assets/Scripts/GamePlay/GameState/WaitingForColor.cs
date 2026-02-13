@@ -4,7 +4,6 @@ namespace FishONU.GamePlay.GameState
 {
     public class WaitingForColor : GameState
     {
-
         protected override void OnServerEnter(GameStateManager manager)
         {
             // 重设所有玩家的 turn 状态

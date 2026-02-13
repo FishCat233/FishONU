@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 
 namespace FishONU.Player
@@ -18,7 +17,7 @@ namespace FishONU.Player
 
             for (int i = 0; i < maxPlayers; i++)
             {
-                // TODO: 
+                // TODO:
                 seatOccupants.Add(null);
             }
         }

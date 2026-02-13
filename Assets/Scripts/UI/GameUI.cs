@@ -1,6 +1,7 @@
 ﻿using FishONU.GamePlay.GameState;
 using FishONU.Player;
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,12 +12,17 @@ namespace FishONU.UI
     {
         [Header("玩家操作")]
         [SerializeField] private Button submitCardButton;
+
         [SerializeField] private Button drawCardButton;
+
         // WARNING: 变色按钮用的是 Unity Event，所以得去 Button 的 Inspector 里面找到 Bind
         [SerializeField] private GameObject secondColorPalette;
 
         [Header("信息显示")]
         [SerializeField] private TextMeshProUGUI currentTurnText;
+        [SerializeField] private TextMeshProUGUI gameRank;
+
+        [Header("数据")]
         [SerializeField] public GameStateManager gm;
 
         public static GameUI Instance;
@@ -93,11 +99,19 @@ namespace FishONU.UI
 
         private bool isTurn;
         private bool isShowSecondColorPalette;
+        private readonly List<string> localRank = new();
         private string currentPlayerDisplayName;
+
+        public void SetupGamingUI(bool activate)
+        {
+            submitCardButton.enabled = activate;
+            drawCardButton.enabled = activate;
+            currentTurnText.enabled = activate;
+            isShowSecondColorPalette = activate;
+        }
 
         public void SelectSecondColor(string colorString)
         {
-
             if (player == null)
             {
                 Debug.LogError("PlayerController is null");
@@ -123,6 +137,13 @@ namespace FishONU.UI
             currentTurnText.text = currentPlayerDisplayName != null ? $"当前回合: {currentPlayerDisplayName}" : "";
 
             secondColorPalette.SetActive(isShowSecondColorPalette);
+
+            if (localRank.Count > 0)
+                foreach (var guid in localRank)
+                {
+                    gameRank.text += $"{PlayerController.FindPlayerByGuid(guid).displayName}\n";
+                }
+            else gameRank.text = "";
         }
 
         private void OnSubmitCardButtonClick()
@@ -147,9 +168,7 @@ namespace FishONU.UI
             player.TryDrawCard();
         }
 
-
-
-        #endregion
+        #endregion View
 
         #region Outer Delegate Handler
 
@@ -185,9 +204,17 @@ namespace FishONU.UI
                 isShowSecondColorPalette = false;
             }
 
+            if (newValue == GameStateEnum.GameOver)
+            {
+                // 关闭所有游戏中 UI，显示排行榜
+                SetupGamingUI(false);
+                localRank.Clear();
+                localRank.AddRange(gm.finishedRankList);
+            }
+
             RefreshView();
         }
 
-        #endregion
+        #endregion Outer Delegate Handler
     }
 }
