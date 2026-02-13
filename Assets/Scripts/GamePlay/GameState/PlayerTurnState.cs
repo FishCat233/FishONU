@@ -7,7 +7,7 @@
             base.OnServerEnter(manager);
 
             // 重设所有玩家的 turn 状态
-            var currentPlayer = manager.players[manager.currentPlayerIndex];
+            var currentPlayer = manager.GetCurrentPlayer();
             foreach (var player in manager.players)
             {
                 player.isOwnersTurn = player.guid == currentPlayer.guid;

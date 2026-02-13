@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Security;
 using FishONU.CardSystem;
-using FishONU.CardSystem.CardArrangeStrategy;
 using FishONU.Player;
 using FishONU.Utils;
 using Mirror;
-using Mirror.Examples.Common.Controllers.Tank;
-using Unity.VisualScripting;
-using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 using Color = FishONU.CardSystem.Color;
 
 namespace FishONU.GamePlay.GameState
@@ -252,7 +246,6 @@ namespace FishONU.GamePlay.GameState
         [Server]
         public void PlayCard(string playerGuid, CardData card)
         {
-            // 参数加上 guid 主要是一种直觉上的方便，虽然根本没用到
             if (playerGuid == null || card == null)
             {
                 Debug.LogError($"PlayCard: guid: {playerGuid}, card: {card}");
@@ -260,7 +253,7 @@ namespace FishONU.GamePlay.GameState
             }
 
             // 删卡
-            var player = players.Find(p => p.guid == playerGuid);
+            var player = PlayerController.FindPlayerByGuid(playerGuid);
             if (player == null)
             {
                 Debug.Log($"Player {playerGuid} not found");
