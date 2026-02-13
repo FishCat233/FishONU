@@ -20,19 +20,28 @@ namespace FishONU.GamePlay.GameState
                 player.isOwnersTurn = false;
             }
 
-            if (manager.topCardData == null)
+            if (manager.effectingCardData == null)
             {
-                Debug.LogError("Top card data is null");
+                // 需要处理的效果牌为空，则不处理效果
+                manager.ChangeState(GameStateEnum.PlayerTurn);
                 return;
             }
 
-            switch (manager.topCardData.face)
+            switch (manager.effectingCardData.face)
             {
                 case Face.Skip:
                     ProcessSkip(manager);
                     break;
                 case Face.Reverse:
                     ProcessReverse(manager);
+                    break;
+                case Face.DrawTwo:
+                    ProcessDrawTwo(manager);
+                    break;
+                default:
+                    // 普通牌的默认效果是进入下一回合
+                    manager.TurnIndexNext();
+                    manager.ChangeState(GameStateEnum.PlayerTurn);
                     break;
             }
         }
@@ -41,21 +50,24 @@ namespace FishONU.GamePlay.GameState
 
         private void ProcessSkip(GameStateManager manager)
         {
+            manager.effectingCardData = null; // 消费令牌
+
             // 下一个玩家
             manager.TurnIndexNext();
 
             // 限定玩家只能抽牌过
             var p = manager.GetCurrentPlayer();
 
-            // TODO: 有空重构吧
-            manager.DrawCard(p.guid); // 抽卡指令会自动进下一回合
+            //manager.DrawCard(p.guid); // jb 写了半天发现记错规则了
 
-            // manager.TurnIndexNext();
-            // manager.ChangeState(GameStateEnum.PlayerTurn);
+            manager.TurnIndexNext();
+            manager.ChangeState(GameStateEnum.PlayerTurn);
         }
 
         private void ProcessReverse(GameStateManager manager)
         {
+            manager.effectingCardData = null;
+
             // 反转出牌顺序
             switch (manager.turnDirection)
             {
@@ -67,8 +79,20 @@ namespace FishONU.GamePlay.GameState
                     break;
             }
 
-            // TODO: bug 反转要在结束回合前，而不是结束回合后
-            manager.EndTurn(false);
+
+            manager.TurnIndexNext();
+            manager.ChangeState(GameStateEnum.PlayerTurn);
+        }
+
+        private void ProcessDrawTwo(GameStateManager manager)
+        {
+            // 下一个玩家要么打 +2 要么 +4 或者选择抽牌清空抽牌堆叠
+            manager.effectingCardData = null;
+
+            manager.drawPenaltyStack += 2;
+
+            manager.TurnIndexNext();
+            manager.ChangeState(GameStateEnum.PlayerTurn);
         }
 
         #endregion

@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Security;
 using FishONU.CardSystem;
-using FishONU.CardSystem.CardArrangeStrategy;
 using FishONU.Player;
 using FishONU.Utils;
 using Mirror;
-using Mirror.Examples.Common.Controllers.Tank;
-using Unity.VisualScripting;
-using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 using Color = FishONU.CardSystem.Color;
 
 namespace FishONU.GamePlay.GameState
@@ -31,7 +25,7 @@ namespace FishONU.GamePlay.GameState
         [SyncVar] public int turnDirection = 1;
         [SyncVar] public int drawPenaltyStack;
         [SyncVar] public CardData topCardData = new CardData();
-        // [SyncVar] public CardData effectingCardData; // 正在生效的功能卡
+        [SyncVar] public CardData effectingCardData; // 正在生效的功能卡
 
         public GameState LocalState { get; private set; }
 
@@ -252,7 +246,6 @@ namespace FishONU.GamePlay.GameState
         [Server]
         public void PlayCard(string playerGuid, CardData card)
         {
-            // 参数加上 guid 主要是一种直觉上的方便，虽然根本没用到
             if (playerGuid == null || card == null)
             {
                 Debug.LogError($"PlayCard: guid: {playerGuid}, card: {card}");
@@ -260,7 +253,7 @@ namespace FishONU.GamePlay.GameState
             }
 
             // 删卡
-            var player = players.Find(p => p.guid == playerGuid);
+            var player = PlayerController.FindPlayerByGuid(playerGuid);
             if (player == null)
             {
                 Debug.Log($"Player {playerGuid} not found");
@@ -270,42 +263,16 @@ namespace FishONU.GamePlay.GameState
             discardPileInventory.Cards.Add(card);
 
             topCardData = card;
+            effectingCardData = card;
 
             Debug.Log($"Player {playerGuid} plays card {card}");
 
-            EndTurn();
-        }
-
-        [Server]
-        public void EndTurn(bool checkSpecCard = true)
-        {
-            // TODO: 胜利结算逻辑
-
-            // 检查是否要洗牌
-            if (drawPileInventory.Cards.Count == 0)
-                ShuffleDrawPile();
-
-            // TODO: 写功能牌
-            // 检查是否有功能牌
-            if (checkSpecCard &&
-                topCardData.face
-                    is Face.Skip
-                    or Face.Reverse
-               )
-            {
-                ChangeState(GameStateEnum.AffectedTurn);
-            }
-            else
-            {
-                TurnIndexNext();
-                ChangeState(GameStateEnum.PlayerTurn);
-            }
+            ChangeState(GameStateEnum.AffectedTurn);
         }
 
         [Server]
         public void DrawCard(string playerGuid)
         {
-            // TODO:
             if (playerGuid == null)
             {
                 Debug.LogError($"DrawCard: playerGuid is null");
@@ -326,19 +293,33 @@ namespace FishONU.GamePlay.GameState
                 return;
             }
 
-            if (drawPileInventory.Cards.TryPop(out var card))
+            int countToDraw = Math.Max(drawPenaltyStack, 1);
+            for (int i = 0; i < countToDraw; i++)
             {
-                player.AddCard(card);
+                if (drawPileInventory.Cards.TryPop(out var card))
+                {
+                    player.AddCard(card);
+                }
+                else
+                {
+                    // 牌不够就洗牌
+                    ShuffleDrawPile();
+                    if (drawPileInventory.Cards.TryPop(out var card2))
+                        player.AddCard(card2);
+                    else
+                    {
+                        Debug.LogError($"drawPileInventory.Cards.TryPop() is null");
+                        return;
+                    }
+                }
             }
-            else
-            {
-                Debug.LogError($"drawPileInventory.Cards.TryPop() is null");
-                return;
-            }
+
+            drawPenaltyStack = 0;
 
             Debug.Log($"Player {playerGuid}({player.displayName}) draws card");
 
-            EndTurn(false);
+            TurnIndexNext();
+            ChangeState(GameStateEnum.PlayerTurn);
         }
 
         [Server]
@@ -353,7 +334,6 @@ namespace FishONU.GamePlay.GameState
             discardPileInventory.Cards.Clear();
             drawPileInventory.Cards.AddRange(cards);
         }
-
 
         [Server]
         public bool CanPlayerAction(string playerGuid)
@@ -377,6 +357,13 @@ namespace FishONU.GamePlay.GameState
             {
                 Debug.LogError($"CanPlayCard: card is null");
                 return false;
+            }
+
+            // 如果有罚牌堆叠正在进行
+            if (drawPenaltyStack > 0)
+            {
+                return card.face == Face.DrawTwo ||
+                    card.face == Face.WildDrawFour;
             }
 
             if (card.color == Color.Black) // 黑牌肯定能打出
