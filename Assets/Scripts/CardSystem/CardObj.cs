@@ -1,6 +1,6 @@
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
-using DG.Tweening;
 using Telepathy;
 using UnityEngine;
 using UColor = UnityEngine.Color;
@@ -21,7 +21,6 @@ namespace FishONU.CardSystem
         public Material material;
     }
 
-
     // TODO: 如果有性能问题就考虑在这使用对象池吧
     public class CardObj : MonoBehaviour
     {
@@ -32,8 +31,7 @@ namespace FishONU.CardSystem
 
         public Action<CardObj> OnCardClick;
 
-
-        [Header("引用")] [SerializeField] private SpriteRenderer spriteRenderer;
+        [Header("引用")][SerializeField] private SpriteRenderer spriteRenderer;
 
         [Header("卡面颜色")] public UColor red = new UColor(255f, 0, 0);
         public UColor blue = new UColor(0, 0, 255f);
@@ -41,10 +39,10 @@ namespace FishONU.CardSystem
         public UColor yellow = new UColor(255f, 255f, 0);
         public UColor black = new UColor(0, 0, 0);
 
-        [Header("卡面贴图")] [SerializeField] private List<UFaceSpritePair> faceSprites;
+        [Header("卡面贴图")][SerializeField] private List<UFaceSpritePair> faceSprites;
         [SerializeField] private List<UColorMaterialPair> colorMaterials;
 
-        void Start()
+        private void Start()
         {
             if (spriteRenderer == null)
             {
@@ -56,7 +54,6 @@ namespace FishONU.CardSystem
                 }
             }
         }
-
 
         public void Load(CardData cardData)
         {

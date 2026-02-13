@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FishONU.CardSystem;
+﻿using FishONU.CardSystem;
 using FishONU.CardSystem.CardArrangeStrategy;
 using FishONU.GamePlay.GameState;
 using FishONU.UI;
 using Mirror;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
@@ -95,7 +95,7 @@ namespace FishONU.Player
                 .Where(p => p != null && p.displayName == names);
         }
 
-        #endregion
+        #endregion Structure
 
         #region View
 
@@ -110,7 +110,6 @@ namespace FishONU.Player
                 player.GetComponent<PlayerController>().TrySit();
             }
         }
-
 
         [Client]
         private void TrySit()
@@ -147,7 +146,7 @@ namespace FishONU.Player
             ownerInventory.HighlightCard = cardData;
         }
 
-        #endregion
+        #endregion View
 
         #region Network
 
@@ -187,7 +186,6 @@ namespace FishONU.Player
             guid = Guid.NewGuid().ToString();
             displayName = IdentifierHelper.RandomIdentifier();
 
-
             Debug.Log($"Player {displayName} with guid {guid} is created on server");
         }
 
@@ -198,7 +196,6 @@ namespace FishONU.Player
             // bind ui event
             GameUI.Instance.BindPlayer(this);
         }
-
 
         [Server]
         public void SitDown()
@@ -258,7 +255,7 @@ namespace FishONU.Player
             if (isClient) OnTurnViewSwitch?.Invoke(oldValue, newValue);
         }
 
-        #endregion
+        #endregion Network
 
         #region GamePlay
 
@@ -359,7 +356,6 @@ namespace FishONU.Player
             gm.SetWildColor(color);
         }
 
-
         [Server]
         private void ValidateAndPlayCard(CardData card)
         {
@@ -404,6 +400,6 @@ namespace FishONU.Player
             ownerInventory.Cards.Remove(cardData);
         }
 
-        #endregion
+        #endregion GamePlay
     }
 }

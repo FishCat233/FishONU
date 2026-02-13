@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Security;
-using FishONU.CardSystem;
-using FishONU.CardSystem.CardArrangeStrategy;
+﻿using FishONU.CardSystem;
 using FishONU.Utils;
+using System.Collections.Generic;
 using UnityEngine;
 using Color = FishONU.CardSystem.Color;
 
@@ -37,13 +35,11 @@ namespace FishONU.GamePlay.GameState
             // 洗牌
             deck.FisherYatesShuffle();
 
-
             // 我不知道什么 b bug 导致 AddRange 后没有 Callback
             // 可能是因为同一帧就不同步了吧，但是底下 players 的 AddRange 是同步的
             drawPileOwnerInventory.Cards.AddRange(deck);
             // manager.drawPile.GetComponent<SecretInventory>()
             //     ?.RpcManualSyncCardView(drawPileOwnerInventory.Cards.Count);
-
 
             //  发牌
             foreach (var player in manager.players)
@@ -67,14 +63,14 @@ namespace FishONU.GamePlay.GameState
                 playerInventory.Cards.AddRange(newCards);
             }
 
-            #endregion
+            #endregion 抽牌堆初始化
 
             #region 弃牌堆初始化
 
             var discardPileInventory = manager.discardPileInventory;
             discardPileInventory.Cards.Clear();
 
-            #endregion
+            #endregion 弃牌堆初始化
 
             #region 抽牌开始流程
 
@@ -103,7 +99,7 @@ namespace FishONU.GamePlay.GameState
 
             Debug.Log($"抽到第一张牌：{firstCard.color.ToString()} {firstCard.face.ToString()}");
 
-            #endregion
+            #endregion 抽牌开始流程
 
             // 初始化游戏状态
             manager.currentPlayerIndex = Random.Range(0, manager.players.Count);

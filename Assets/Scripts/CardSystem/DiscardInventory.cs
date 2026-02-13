@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using DG.Tweening;
+﻿using DG.Tweening;
 using FishONU.CardSystem.CardArrangeStrategy;
 using Mirror;
+using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace FishONU.CardSystem
 {
@@ -170,7 +168,7 @@ namespace FishONU.CardSystem
             }
         }
 
-        #endregion
+        #endregion View
 
         #region Network
 
@@ -198,7 +196,7 @@ namespace FishONU.CardSystem
             RefreshView();
         }
 
-        #endregion
+        #endregion Network
 
         #region Debug
 
@@ -215,6 +213,6 @@ namespace FishONU.CardSystem
             Cards.RemoveAt(Cards.Count - 1);
         }
 
-        #endregion
+        #endregion Debug
     }
 }
