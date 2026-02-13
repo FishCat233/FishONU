@@ -43,6 +43,9 @@ namespace FishONU.GamePlay.GameState
                 case Face.Wild:
                     ProcessWild(manager);
                     break;
+                case Face.WildDrawFour:
+                    ProcessWildDrawFour(manager);
+                    break;
                 default:
                     // 普通牌的默认效果是进入下一回合
                     manager.TurnIndexNext();
@@ -103,6 +106,15 @@ namespace FishONU.GamePlay.GameState
         private void ProcessWild(GameStateManager manager)
         {
             manager.effectingCardData = null;
+
+            manager.ChangeState(GameStateEnum.WaitingForColor);
+        }
+
+        private void ProcessWildDrawFour(GameStateManager manager)
+        {
+            manager.effectingCardData = null;
+
+            manager.drawPenaltyStack += 4;
 
             manager.ChangeState(GameStateEnum.WaitingForColor);
         }
