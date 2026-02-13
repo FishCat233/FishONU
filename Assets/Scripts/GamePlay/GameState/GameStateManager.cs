@@ -307,21 +307,19 @@ namespace FishONU.GamePlay.GameState
             int countToDraw = Math.Max(drawPenaltyStack, 1);
             for (int i = 0; i < countToDraw; i++)
             {
+                if (drawPileInventory.Cards.Count == 0)
+                {
+                    ShuffleDrawPile();
+                }
+
                 if (drawPileInventory.Cards.TryPop(out var card))
                 {
                     player.AddCard(card);
                 }
                 else
                 {
-                    // 牌不够就洗牌
-                    ShuffleDrawPile();
-                    if (drawPileInventory.Cards.TryPop(out var card2))
-                        player.AddCard(card2);
-                    else
-                    {
-                        Debug.LogError($"drawPileInventory.Cards.TryPop() is null");
-                        return;
-                    }
+                    Debug.LogError($"drawPileInventory.Cards.TryPop() is null");
+                    return;
                 }
             }
 
@@ -389,8 +387,19 @@ namespace FishONU.GamePlay.GameState
             // 如果有罚牌堆叠正在进行
             if (drawPenaltyStack > 0)
             {
-                return card.face == Face.DrawTwo ||
-                    card.face == Face.WildDrawFour;
+                var topFace = topCardData.face;
+
+                switch (topFace)
+                {
+                    case Face.DrawTwo:
+                        // +2 -> +2/+4
+                        return card.face == Face.DrawTwo || card.face == Face.WildDrawFour;
+                    case Face.WildDrawFour:
+                        // +4 -> +4
+                        return card.face == Face.WildDrawFour;
+                }
+
+                return false;
             }
 
             if (card.color == Color.Black) // 黑牌肯定能打出
