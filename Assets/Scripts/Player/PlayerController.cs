@@ -193,6 +193,10 @@ namespace FishONU.Player
         {
             base.OnStartLocalPlayer();
 
+            // 发送显示名到服务器
+            string saveName = PlayerPrefs.GetString("PlayerDisplayName", IdentifierHelper.RandomIdentifier());
+            CmdUpdatePlayerName(saveName);
+
             // bind ui event
             GameUI.Instance.BindPlayer(this);
         }
@@ -253,6 +257,13 @@ namespace FishONU.Player
         public void OnTurnSwitch(bool oldValue, bool newValue)
         {
             if (isClient) OnTurnViewSwitch?.Invoke(oldValue, newValue);
+        }
+
+        [Command]
+        private void CmdUpdatePlayerName(string playerName)
+        {
+            Debug.Log($"Player {guid}({playerName} change display name to {playerName}");
+            displayName = playerName;
         }
 
         #endregion Network

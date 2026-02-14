@@ -1,12 +1,15 @@
 ﻿using FishONU.GamePlay.GameState;
+using FishONU.Network;
 using FishONU.Player;
+using Mirror;
+using R3;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using R3;
-using System.Linq;
 
 namespace FishONU.UI
 {
@@ -18,8 +21,9 @@ namespace FishONU.UI
         public ReadOnlyReactiveProperty<bool> IsGaming { get; }
         public ReadOnlyReactiveProperty<bool> ShowColorPalette { get; }
         public ReadOnlyReactiveProperty<List<string>> GameRankName { get; }
+        public ReadOnlyReactiveProperty<int> TablePlayerCount { get; }
 
-        public GameViewModel(GameStateManager gm, PlayerController pl)
+        public GameViewModel(GameStateManager gm, PlayerController pl, TableManager tm)
         {
             StateEnum = Observable.EveryValueChanged(gm, x => x.syncStateEnum)
                 .ToReadOnlyReactiveProperty(GameStateEnum.None);
@@ -50,8 +54,11 @@ namespace FishONU.UI
                     })
                         .ToList())
                 .ToReadOnlyReactiveProperty(new List<string>());
-        }
 
+            TablePlayerCount = tm.OnSeatChangeAsObservable()
+                .Where(_ => NetworkServer.active)
+                .ToReadOnlyReactiveProperty(0);
+        }
     }
 
     public class GameUI : MonoBehaviour
@@ -67,12 +74,15 @@ namespace FishONU.UI
         [SerializeField] private Button secondColorChooseGreenButton;
         [SerializeField] private Button secondColorChooseYellowButton;
 
+        [SerializeField] private Button startGameButton;
+
         [Header("信息显示")]
         [SerializeField] private TextMeshProUGUI currentPlayerText;
         [SerializeField] private TextMeshProUGUI gameRank;
 
         [Header("数据")]
-        [SerializeField] public GameStateManager gm;
+        [SerializeField] private GameStateManager gm;
+        [SerializeField] private TableManager tm;
 
         public static GameUI Instance;
 
@@ -96,6 +106,10 @@ namespace FishONU.UI
             else currentPlayerText.text = "";
 
             if (gm == null) Debug.LogError("GameStateManager is null");
+            if (tm == null) Debug.LogError("TableManager is null");
+
+            startGameButton.gameObject.SetActive(NetworkServer.active);
+            startGameButton.interactable = false;
         }
 
 
@@ -114,11 +128,14 @@ namespace FishONU.UI
             }
 
             player = playerController;
-            _viewModel = new GameViewModel(gm, player);
+            _viewModel = new GameViewModel(gm, player, tm);
 
             var d = Disposable.CreateBuilder();
 
             // action
+
+            #region
+
             submitCardButton.OnClickAsObservable()
                 .ThrottleFirst(TimeSpan.FromMilliseconds(1000)) // 防抖动，限制一秒只能触发一次
                 .Subscribe(_ =>
@@ -153,7 +170,16 @@ namespace FishONU.UI
                     .AddTo(ref d);
             }
 
+            startGameButton.OnClickAsObservable()
+                .Where(_ => NetworkServer.active)
+                .Subscribe(_ => gm.StartGame())
+                .AddTo(ref d);
+
+            #endregion
+
             // view
+
+            #region view bind
 
             _viewModel.IsMyTurn
                 .Subscribe(interactive =>
@@ -184,6 +210,7 @@ namespace FishONU.UI
                     if (state == GameStateEnum.GameOver &&
                         rankList.Count > 0)
                     {
+                        gameRank.text += "结算：\n";
                         for (int i = 0; i < rankList.Count; i++)
                         {
                             gameRank.text += $"{i + 1}. {rankList[i]}\n";
@@ -199,7 +226,24 @@ namespace FishONU.UI
                 })
                 .AddTo(ref d);
 
-            // TODO: ...
+            _viewModel.StateEnum
+                .Where(_ => NetworkServer.active)
+                .Subscribe(state => startGameButton.gameObject.SetActive(state is (GameStateEnum.None or GameStateEnum.GameOver)))
+                .AddTo(ref d);
+
+            _viewModel.StateEnum
+                .Where(_ => NetworkServer.active)
+                .CombineLatest(_viewModel.TablePlayerCount, (state, count) => (state, count))
+                .Subscribe(x =>
+                {
+                    // TODO: 也许可以不用那么频繁触发这个，一个 state 变化这里就重新触发了
+                    startGameButton.interactable = x.state is (GameStateEnum.None or GameStateEnum.GameOver) &&
+                        x.count >= 2;
+                }
+                )
+                .AddTo(ref d);
+
+            #endregion
 
             d.RegisterTo(destroyCancellationToken);
         }
