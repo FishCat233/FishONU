@@ -199,9 +199,18 @@ namespace FishONU.UI
 
             var d = Disposable.CreateBuilder();
 
+            if (playerController.TryGetComponent<FishONU.CardSystem.OwnerInventory>(out var inv))
+            {
+                inv.CanPlayCardFunc = c => player.isOwnersTurn && gm.CanCardPlay(c);
+            }
+            else
+            {
+                Debug.LogWarning("OwnerInventory is null");
+            }
+
             // action
 
-            #region
+            #region Action
 
             submitCardButton.OnClickAsObservable()
                 .ThrottleFirst(TimeSpan.FromMilliseconds(1000)) // 防抖动，限制一秒只能触发一次
@@ -318,6 +327,14 @@ namespace FishONU.UI
                                                        x.count >= 2;
                     }
                 )
+                .AddTo(ref d);
+
+            _viewModel.StateEnum
+                .Subscribe(_ =>
+                {
+                    if (player != null && player.ownerInventory != null)
+                        player.ownerInventory.ApplyCanPlayCardHighlight();
+                })
                 .AddTo(ref d);
 
             // 绑定座位名字显示

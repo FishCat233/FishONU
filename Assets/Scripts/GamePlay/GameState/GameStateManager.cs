@@ -431,7 +431,6 @@ namespace FishONU.GamePlay.GameState
             return index == currentPlayerIndex;
         }
 
-        [Server]
         public bool CanCardPlay(CardData card)
         {
             if (card == null)
