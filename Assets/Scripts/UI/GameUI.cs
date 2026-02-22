@@ -23,6 +23,7 @@ namespace FishONU.UI
         public ReadOnlyReactiveProperty<int> TablePlayerCount { get; }
 
         public ReadOnlyReactiveProperty<string[]> SeatNames { get; }
+        public ReadOnlyReactiveProperty<int[]> SeatCardCounts { get; }
 
         public ReadOnlyReactiveProperty<FishONU.CardSystem.Color> CurrentGameColor { get; }
 
@@ -87,6 +88,30 @@ namespace FishONU.UI
                 })
                 .ToReadOnlyReactiveProperty(new string[4] { "", "", "", "" });
 
+            SeatCardCounts = Observable.Interval(TimeSpan.FromSeconds(2))
+                .AsUnitObservable()
+                .Merge(Observable.Timer(TimeSpan.FromSeconds(1)).AsUnitObservable())
+                .Select(_ =>
+                {
+                    int[] counts = new int[4] { 0, 0, 0, 0 };
+                    var allPlayers = GameObject.FindGameObjectsWithTag("Player")
+                        .Select(go => go.GetComponent<PlayerController>())
+                        .Where(p => p != null);
+
+                    foreach (var p in allPlayers)
+                    {
+                        int localIndex = SeatHelper.CalcLocalSeatIndex(pl.seatIndex, p.seatIndex);
+
+                        if (localIndex >= 0 && localIndex < 4)
+                        {
+                            counts[localIndex] = p.secretInventory?.CardNumber ?? 0;
+                        }
+                    }
+
+                    return counts;
+                })
+                .ToReadOnlyReactiveProperty(new int[4] { 0, 0, 0, 0 });
+
             // 监听 topCardData 的变化
             //CurrentGameColor = Observable.EveryValueChanged(gm, x => x.topCardData)
             CurrentGameColor = Observable.Interval(TimeSpan.FromSeconds(0.7))
@@ -106,7 +131,7 @@ namespace FishONU.UI
 
     public class GameUI : MonoBehaviour
     {
-        [Header("玩家操作")] [SerializeField] private Button submitCardButton;
+        [Header("玩家操作")][SerializeField] private Button submitCardButton;
 
         [SerializeField] private Button drawCardButton;
 
@@ -118,12 +143,12 @@ namespace FishONU.UI
 
         [SerializeField] private Button startGameButton;
 
-        [Header("信息显示")] [SerializeField] private TextMeshProUGUI currentPlayerText;
+        [Header("信息显示")][SerializeField] private TextMeshProUGUI currentPlayerText;
         [SerializeField] private TextMeshProUGUI gameRank;
 
         [SerializeField] private TextMeshProUGUI[] seatNameTexts;
 
-        [Header("数据")] [SerializeField] private GameStateManager gm;
+        [Header("数据")][SerializeField] private GameStateManager gm;
         [SerializeField] private TableManager tm;
 
         public static GameUI Instance;
@@ -297,13 +322,16 @@ namespace FishONU.UI
 
             // 绑定座位名字显示
             _viewModel.SeatNames
-                .Subscribe(names =>
+                .CombineLatest(_viewModel.SeatCardCounts, (names, counts) => (names, counts))
+                .Subscribe(tuple =>
                 {
+                    var (names, counts) = tuple;
                     for (int i = 0; i < seatNameTexts.Length; i++)
                     {
                         if (i < names.Length)
                         {
                             seatNameTexts[i].text = names[i];
+                            seatNameTexts[i].color = GetSeatNameColor(counts[i]);
                         }
                     }
                 })
@@ -334,6 +362,15 @@ namespace FishONU.UI
         #endregion Handler
 
         #region Configs
+
+        private Color GetSeatNameColor(int cardCount)
+        {
+            if (cardCount == 0)
+                return Color.green;
+            if (cardCount == 1)
+                return Color.yellow;
+            return Color.white;
+        }
 
         private Color GetUnityColor(FishONU.CardSystem.Color cardColor)
         {
