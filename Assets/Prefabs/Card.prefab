@@ -99,6 +99,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDrag: 0
+  _isMaterialHighlight: 0
+  data:
+    color: 4
+    secondColor: 4
+    face: 15
+    guid: c35f3e57-4c55-466e-8de1-444cb96d476c
   spriteRenderer: {fileID: 817575177934693086}
   red: {r: 255, g: 0, b: 0, a: 1}
   blue: {r: 0, g: 0, b: 255, a: 1}

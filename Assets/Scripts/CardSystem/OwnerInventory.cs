@@ -19,6 +19,8 @@ namespace FishONU.CardSystem
 
         public int LocalCardNumber => LocalCards.Count;
 
+        public Func<CardData, bool> CanPlayCardFunc = c => true;
+
         private CardData _highLightCard;
 
         public CardData HighlightCard
@@ -112,6 +114,8 @@ namespace FishONU.CardSystem
             base.RefreshView();
 
             ApplyHighlightCard();
+
+            ApplyCanPlayCardHighlight();
         }
 
         [Client]
@@ -238,6 +242,27 @@ namespace FishONU.CardSystem
             if (_highLightCard == null) return;
 
             SetHighlightCardView(_highLightCard);
+        }
+
+        [Client]
+        public void ApplyCanPlayCardHighlight()
+        {
+            Debug.Log("ApplyCanPlayCardHighlight");
+
+            foreach (var data in LocalCards)
+            {
+                if (!localCardObjs.ContainsKey(data.guid))
+                {
+                    Debug.LogWarning($"CardObj not found: {data.guid}");
+                    return;
+                }
+
+                var obj = localCardObjs[data.guid];
+                if (obj == null) return;
+
+                // 取反是因为卡牌高光实际上叠的是暗色
+                obj.GetComponent<CardObj>().IsMaterialHighlight = !CanPlayCardFunc(data);
+            }
         }
 
         #endregion View

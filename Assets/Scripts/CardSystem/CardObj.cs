@@ -1,6 +1,7 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Telepathy;
 using UnityEngine;
 using UColor = UnityEngine.Color;
@@ -26,6 +27,17 @@ namespace FishONU.CardSystem
     {
         public bool IsHover { get; private set; }
         public bool isDrag = false;
+
+        [SerializeField] private bool _isMaterialHighlight = false;
+        public bool IsMaterialHighlight
+        {
+            get => _isMaterialHighlight;
+            set
+            {
+                _isMaterialHighlight = value;
+                UpdateMaterialHighlight();
+            }
+        }
 
         public CardData data;
 
@@ -102,6 +114,16 @@ namespace FishONU.CardSystem
             spriteRenderer.DOFade(0, time).OnComplete(() => Destroy(gameObject));
         }
 
+        private void UpdateMaterialHighlight()
+        {
+            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            spriteRenderer.GetPropertyBlock(mpb);
+            mpb.SetFloat("_HighlightEnable", _isMaterialHighlight ? 1.0f : 0.0f);
+            spriteRenderer.SetPropertyBlock(mpb);
+        }
+
         private void OnMouseEnter()
         {
             IsHover = true;
@@ -115,6 +137,11 @@ namespace FishONU.CardSystem
         private void OnMouseDown()
         {
             OnCardClick?.Invoke(this);
+        }
+        private void OnValidate()
+        {
+            // 确保在编辑器环境下也能实时看到变化
+            UpdateMaterialHighlight();
         }
     }
 }

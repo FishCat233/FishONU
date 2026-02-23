@@ -199,9 +199,18 @@ namespace FishONU.UI
 
             var d = Disposable.CreateBuilder();
 
+            if (playerController.TryGetComponent<FishONU.CardSystem.OwnerInventory>(out var inv))
+            {
+                inv.CanPlayCardFunc = c => player.isOwnersTurn && gm.CanCardPlay(c);
+            }
+            else
+            {
+                Debug.LogWarning("OwnerInventory is null");
+            }
+
             // action
 
-            #region
+            #region Action
 
             submitCardButton.OnClickAsObservable()
                 .ThrottleFirst(TimeSpan.FromMilliseconds(1000)) // 防抖动，限制一秒只能触发一次
@@ -315,9 +324,19 @@ namespace FishONU.UI
                     {
                         // TODO: 也许可以不用那么频繁触发这个，一个 state 变化这里就重新触发了
                         startGameButton.interactable = x.state is (GameStateEnum.None or GameStateEnum.GameOver) &&
-                                                       x.count >= 2;
+                                                        x.count >= 2;
                     }
                 )
+                .AddTo(ref d);
+
+            // 可打出卡牌高亮效果
+            _viewModel.StateEnum
+                .CombineLatest(_viewModel.IsMyTurn, (state, isMyTurn) => (state, isMyTurn))
+                .Subscribe(_ =>
+                {
+                    if (player != null && player.ownerInventory != null)
+                        player.ownerInventory.ApplyCanPlayCardHighlight();
+                })
                 .AddTo(ref d);
 
             // 绑定座位名字显示
