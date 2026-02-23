@@ -900,7 +900,7 @@ PrefabInstance:
     - target: {fileID: 3662558387864388539, guid: 929b13f5c695e1b45b5edd39695ec655, type: 3}
       propertyPath: transport
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2046783825}
     - target: {fileID: 3662558387864388539, guid: 929b13f5c695e1b45b5edd39695ec655, type: 3}
       propertyPath: onlineScene
       value: Assets/Scenes/Scene_Game.unity
@@ -4085,6 +4085,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0d514061f0d489aa2fbfc71f40f1834, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2046783825 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6391155090301433253, guid: 929b13f5c695e1b45b5edd39695ec655, type: 3}
+  m_PrefabInstance: {fileID: 538600199}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &2072645019

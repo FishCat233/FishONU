@@ -23,8 +23,8 @@ namespace FishONU.CardSystem
             }
             set
             {
-                RefreshView();
                 _arrangeStrategy = value;
+                RefreshView();
             }
         }
 
