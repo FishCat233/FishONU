@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 
 [ExecuteAlways]
+[RequireComponent(typeof(TMP_Text))]
 public class RainbowTMPText : MonoBehaviour
 {
     [SerializeField] private bool enableEffect = true;
@@ -17,6 +18,8 @@ public class RainbowTMPText : MonoBehaviour
 
     private TMP_Text tmp;
     private Material _rainbowMaterial;
+
+    public TMP_Text Tmp => tmp;
 
     public float Saltiness
     {
