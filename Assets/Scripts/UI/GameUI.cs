@@ -148,6 +148,7 @@ namespace FishONU.UI
         [SerializeField] private Button startGameButton;
 
         [Header("信息显示")][SerializeField] private TextMeshProUGUI currentPlayerText;
+
         [SerializeField] private TextMeshProUGUI gameRank;
 
         [SerializeField] private TextMeshProUGUI[] seatNameTexts;
@@ -300,10 +301,12 @@ namespace FishONU.UI
                     var (rankList, state) = x;
 
                     gameRank.text = "";
+                    gameRank.transform.parent.gameObject.SetActive(false);
 
                     if (state == GameStateEnum.GameOver &&
                         rankList.Count > 0)
                     {
+                        gameRank.transform.parent.gameObject.SetActive(true);
                         gameRank.text += "结算：\n";
                         for (int i = 0; i < rankList.Count; i++)
                         {
