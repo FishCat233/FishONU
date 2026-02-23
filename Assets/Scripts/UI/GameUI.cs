@@ -26,6 +26,7 @@ namespace FishONU.UI
         public ReadOnlyReactiveProperty<int[]> SeatCardCounts { get; }
 
         public ReadOnlyReactiveProperty<FishONU.CardSystem.Color> CurrentGameColor { get; }
+        public ReadOnlyReactiveProperty<int> PenaltyNumber { get; }
 
         public GameViewModel(GameStateManager gm, PlayerController pl, TableManager tm)
         {
@@ -126,6 +127,9 @@ namespace FishONU.UI
                         : card.color;
                 })
                 .ToReadOnlyReactiveProperty(FishONU.CardSystem.Color.Black);
+
+            PenaltyNumber = Observable.EveryValueChanged(gm, x => x.drawPenaltyStack)
+                .ToReadOnlyReactiveProperty();
         }
     }
 
@@ -147,6 +151,8 @@ namespace FishONU.UI
         [SerializeField] private TextMeshProUGUI gameRank;
 
         [SerializeField] private TextMeshProUGUI[] seatNameTexts;
+
+        [SerializeField] private RainbowTMPText penaltyNumberText;
 
         [Header("数据")][SerializeField] private GameStateManager gm;
         [SerializeField] private TableManager tm;
@@ -358,6 +364,32 @@ namespace FishONU.UI
 
             _viewModel.CurrentGameColor
                 .Subscribe(color => { currentPlayerText.color = GetUnityColor(color); })
+                .AddTo(ref d);
+
+
+            // penalty number
+            _viewModel.PenaltyNumber
+                .Subscribe(number =>
+                {
+                    penaltyNumberText.EnableEffect = false;
+                    penaltyNumberText.Tmp.text = "";
+                    penaltyNumberText.Saltiness = 0;
+
+                    if (number == 0) return;
+
+                    // +2 只有显示
+                    if (number <= 2)
+                    {
+                        penaltyNumberText.Tmp.text = $"+{number}";
+                        return;
+                    }
+
+                    // +2 以上开始计算苦逼值，0~12 反向插值
+                    penaltyNumberText.EnableEffect = true;
+                    penaltyNumberText.Tmp.text = $"+{number}";
+                    var saltiness = Mathf.InverseLerp(0, 12, number);
+                    penaltyNumberText.Saltiness = saltiness;
+                })
                 .AddTo(ref d);
 
             #endregion
