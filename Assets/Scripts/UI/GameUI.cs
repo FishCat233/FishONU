@@ -324,12 +324,14 @@ namespace FishONU.UI
                     {
                         // TODO: 也许可以不用那么频繁触发这个，一个 state 变化这里就重新触发了
                         startGameButton.interactable = x.state is (GameStateEnum.None or GameStateEnum.GameOver) &&
-                                                       x.count >= 2;
+                                                        x.count >= 2;
                     }
                 )
                 .AddTo(ref d);
 
+            // 可打出卡牌高亮效果
             _viewModel.StateEnum
+                .CombineLatest(_viewModel.IsMyTurn, (state, isMyTurn) => (state, isMyTurn))
                 .Subscribe(_ =>
                 {
                     if (player != null && player.ownerInventory != null)
