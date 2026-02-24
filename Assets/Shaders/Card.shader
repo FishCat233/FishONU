@@ -82,6 +82,9 @@
             ENDCG
         }
 
-
+        Pass {
+            Name "CardOutline"
+            Tags { "LightMode" = "CardOutline"}
+        }
     }
 }

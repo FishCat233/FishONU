@@ -121,6 +121,9 @@ namespace FishONU.CardSystem
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             spriteRenderer.GetPropertyBlock(mpb);
             mpb.SetFloat("_HighlightEnable", _isMaterialHighlight ? 1.0f : 0.0f);
+
+            mpb.SetFloat("_EnableOutline", _isMaterialHighlight ? 1.0f : 0.0f);
+
             spriteRenderer.SetPropertyBlock(mpb);
         }
 
