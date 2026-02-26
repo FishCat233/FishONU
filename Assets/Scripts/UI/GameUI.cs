@@ -415,7 +415,7 @@ namespace FishONU.UI
 
                     if (latency < 0f) return;
 
-                    rttLatencyText.text = $"{latency:0F}ms";
+                    rttLatencyText.text = $"{latency * 1000:F0}ms";
 
                     // color
                     if (latency < 100f)
