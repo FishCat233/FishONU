@@ -28,6 +28,8 @@ namespace FishONU.UI
         public ReadOnlyReactiveProperty<FishONU.CardSystem.Color> CurrentGameColor { get; }
         public ReadOnlyReactiveProperty<int> PenaltyNumber { get; }
 
+        public ReadOnlyReactiveProperty<double> RTTLatency { get; }
+
         public GameViewModel(GameStateManager gm, PlayerController pl, TableManager tm)
         {
             StateEnum = Observable.EveryValueChanged(gm, x => x.syncStateEnum)
@@ -113,6 +115,14 @@ namespace FishONU.UI
                 })
                 .ToReadOnlyReactiveProperty(new int[4] { 0, 0, 0, 0 });
 
+            RTTLatency = Observable.Interval(TimeSpan.FromSeconds(2))
+                .Where(_ => NetworkClient.active)
+                .Select(_ =>
+                {
+                    return NetworkTime.rtt;
+                })
+                .ToReadOnlyReactiveProperty(-1);
+
             // 监听 topCardData 的变化
             //CurrentGameColor = Observable.EveryValueChanged(gm, x => x.topCardData)
             CurrentGameColor = Observable.Interval(TimeSpan.FromSeconds(0.7))
@@ -154,6 +164,8 @@ namespace FishONU.UI
         [SerializeField] private TextMeshProUGUI[] seatNameTexts;
 
         [SerializeField] private RainbowTMPText penaltyNumberText;
+
+        [SerializeField] private TMP_Text rttLatencyText;
 
         [Header("数据")][SerializeField] private GameStateManager gm;
         [SerializeField] private TableManager tm;
@@ -392,6 +404,32 @@ namespace FishONU.UI
                     penaltyNumberText.Tmp.text = $"+{number}";
                     var saltiness = Mathf.InverseLerp(0, 12, number);
                     penaltyNumberText.Saltiness = saltiness;
+                })
+                .AddTo(ref d);
+
+            // rtt latency
+            _viewModel.RTTLatency
+                .Subscribe(latency =>
+                {
+                    rttLatencyText.text = "";
+
+                    if (latency < 0f) return;
+
+                    rttLatencyText.text = $"{latency:0F}ms";
+
+                    // color
+                    if (latency < 100f)
+                    {
+                        rttLatencyText.color = Color.green;
+                    }
+                    else if (latency < 160f)
+                    {
+                        rttLatencyText.color = Color.yellow;
+                    }
+                    else
+                    {
+                        rttLatencyText.color = Color.red;
+                    }
                 })
                 .AddTo(ref d);
 
