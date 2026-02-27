@@ -3,7 +3,9 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _MainColor ("Main Color", Color) = (1,0,0,1)
+
+        _DyeEnable ("Dye Enable", Range(0,1)) = 0
+        _DyeColor ("Dye Color", Color) = (1,0,0,1)
 
         _HighlightEnable ("Highlight Enable", Range(0,1)) = 0
         _HighlightColor ("Highlight Color", Color) = (0,0,0,0.77)
@@ -44,7 +46,9 @@
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            fixed4 _MainColor;
+
+            fixed4 _DyeColor;
+            float _DyeEnable;
 
             float _HighlightEnable;
             float4 _HighlightColor;
@@ -66,9 +70,10 @@
                 fixed gray = dot(col.rgb, float3(0.299, 0.587, 0.114));
 
                 // 插值
-                fixed3 result = lerp(_MainColor.rgb, fixed3(1,1,1), gray);
+                fixed3 result = lerp(_DyeColor.rgb, fixed3(1,1,1), gray);
                 
-                col = fixed4(result, col.a);
+                if (_DyeEnable > 0.5f)
+                    col = fixed4(result, col.a);
 
                 UNITY_APPLY_FOG(i.fogCoord, col);
 
