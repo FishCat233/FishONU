@@ -167,8 +167,12 @@ namespace FishONU.UI
 
         [SerializeField] private TMP_Text rttLatencyText;
 
+        [Header("卡牌历史")][SerializeField] private GameObject cardHistoryUI;
+        [SerializeField] private FishONU.UI.CardHistory.CardHistoryComponent cardHistoryComponent;
+
         [Header("数据")][SerializeField] private GameStateManager gm;
         [SerializeField] private TableManager tm;
+        [SerializeField] private FishONU.CardSystem.DiscardInventory discardPile;
 
         public static GameUI Instance;
 
@@ -196,6 +200,12 @@ namespace FishONU.UI
 
             startGameButton.gameObject.SetActive(NetworkServer.active);
             startGameButton.interactable = false;
+
+            // 初始化卡牌历史UI
+            if (cardHistoryUI != null)
+            {
+                cardHistoryUI.SetActive(false);
+            }
         }
 
 
@@ -211,6 +221,18 @@ namespace FishONU.UI
             {
                 Debug.LogError("PlayerController is already binded");
                 return;
+            }
+
+            {
+                var pile = GameObject.FindWithTag("DiscardPile")?.GetComponent<FishONU.CardSystem.DiscardInventory>();
+                if (pile == null)
+                {
+                    Debug.LogError("DiscardPile is null");
+                }
+                else
+                {
+                    discardPile = pile;
+                }
             }
 
             player = playerController;
@@ -474,6 +496,36 @@ namespace FishONU.UI
                 FishONU.CardSystem.Color.Yellow => Color.yellow,
                 _ => Color.white // 黑色或背面时默认白色
             };
+        }
+
+        #endregion
+
+        #region Card History
+
+        public void ToggleCardHistory()
+        {
+            if (cardHistoryUI == null || cardHistoryComponent == null || discardPile == null)
+                return;
+
+            bool isActive = !cardHistoryUI.activeSelf;
+            cardHistoryUI.SetActive(isActive);
+
+            if (isActive)
+            {
+                // 显示时更新历史数据
+                UpdateCardHistory();
+            }
+        }
+
+        private void UpdateCardHistory()
+        {
+            if (discardPile == null || cardHistoryComponent == null)
+                return;
+
+            // 获取弃牌堆的卡牌数据并反转顺序，使最新的卡牌显示在前面
+            var discardCards = discardPile.Cards.ToList();
+            discardCards.Reverse();
+            cardHistoryComponent.Data = discardCards;
         }
 
         #endregion

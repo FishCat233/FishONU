@@ -90,9 +90,21 @@ namespace FishONU.Player
 
                     var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(inputPosition), Vector2.zero);
 
-                    if (hit.collider != null && hit.collider.gameObject.CompareTag("Card"))
+                    if (hit.collider != null)
                     {
-                        SelectCard(hit.collider.gameObject);
+                        if (hit.collider.gameObject.CompareTag("Card"))
+                        {
+                            // 检测是否是 DiscardPile 的子物件
+                            if (hit.collider.gameObject.transform.parent != null &&
+                                hit.collider.gameObject.transform.parent.CompareTag("DiscardPile"))
+                            {
+                                ToggleCardHistory();
+                            }
+                            else
+                            {
+                                SelectCard(hit.collider.gameObject);
+                            }
+                        }
                     }
                 }
             }
@@ -301,6 +313,19 @@ namespace FishONU.Player
         }
 
         #endregion Network
+
+        #region Card History
+
+        [Client]
+        public void ToggleCardHistory()
+        {
+            if (GameUI.Instance != null)
+            {
+                GameUI.Instance.ToggleCardHistory();
+            }
+        }
+
+        #endregion
 
         #region GamePlay
 
